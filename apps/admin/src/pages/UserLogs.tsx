@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router';
 import { supabase } from '@/lib/supabaseClient';
 import TableComponent from '../components/common/TableComponent/TableComponent';
@@ -386,7 +386,6 @@ const UserTimelogScreen = () => {
           shortSearch={false}
           expandable={true}
           renderExpandedRow={renderExpandedRow}
-          getRowCanExpand={() => true}
           disableSearch={true}
         />
       </div>

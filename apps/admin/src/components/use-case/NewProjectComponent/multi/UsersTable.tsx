@@ -3,7 +3,7 @@ import type { TeamMember } from '@/pages/NewProject'
 import { useUserStore } from '@/store/userStore';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Check, X } from 'lucide-react';
-import React, { type FC } from 'react'
+import { type FC } from 'react'
 
 export type RenderedUser = Omit<TeamMember, 'id'> & {
     name: string

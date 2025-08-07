@@ -1,5 +1,5 @@
 import type { ClientUser } from '@/pages/NewProject'
-import React, { type FC } from 'react'
+import { type FC } from 'react'
 import NewUserComponent from '../../NewUserComponent';
 
 type IProps = {

@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import React, { useState, type FC } from 'react'
+import { useState, type FC } from 'react'
 import { toast } from 'sonner'
 import type { UserCategories } from '../UsersComponent/UsersLayout'
 import { Checkbox } from '@/components/ui/checkbox'
