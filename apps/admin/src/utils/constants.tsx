@@ -11,7 +11,7 @@ import { User, UserPlus, Clock, Workflow, LayoutDashboard, PackageCheck } from "
 import type React from "react"
 
 export const SUPABASE_PROJECT_URL = env.VITE_SUPABASE_PROJECT_URL as string
-export const SUPABASE_DB_PASS = env.VITE_SUPABASE_DB_PASS as string
+export const SUPABASE_DB_PASS = env.VITE_SUPABASE_DB_PASSWORD as string
 export const SUPABASE_ACCESS_TOKEN = env.VITE_SUPABASE_ACCESS_TOKEN as string
 export const SUPABASE_API_KEY = env.VITE_SUPABASE_API_KEY as string
 export const SUPABASE_SERVICE_ROLE_KEY = env.VITE_SUPABASE_SERVICE_ROLE_KEY as string;
@@ -45,7 +45,7 @@ export const PAGES: Page[] = [
         name: 'create-user',
         path: "/users/new",
         heading: 'Create New User',
-        element: <NewUser/>,
+        element: <NewUser />,
         icon: <UserPlus />,
         inNav: true
     },
