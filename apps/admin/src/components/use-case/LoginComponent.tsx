@@ -13,7 +13,8 @@ const LoginComponent = () => {
     return (
         <div className="min-h-screen bg-background flex justify-center items-center">
             <form onSubmit={handleSubmit} className="bg-card border border-gray-200 rounded-lg p-4 w-1/2 min-w-[350px] flex flex-col gap-4 max-w-125">
-                <h1 className="text-2xl">Login</h1>
+                <h1 className="text-2xl">Ziel Global Ltd Internal Portal | Admin</h1>
+                <h2 className="text-xl">Login</h2>
                 <Input
                     placeholder="Email"
                     value={formData.username.value}
