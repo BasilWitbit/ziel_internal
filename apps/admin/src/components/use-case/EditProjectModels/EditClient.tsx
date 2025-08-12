@@ -19,8 +19,14 @@ const EditClient: React.FC<IProps> = ({ defaultClient, getValue }) => {
     useEffect(() => {
         getUsers().then((res) => {
             if (!res.error && res.data) {
-                setUsers(res.data);
-                const defaultUser = res.data.find(eachUser => `${defaultClient.id}` === `${eachUser.id}`);
+                const mappedUsers = res.data.map((user: any) => ({
+                    email: user.email ?? "",
+                    firstName: user.firstName ?? "",
+                    lastName: user.lastName ?? "",
+                    id: user.id
+                }));
+                setUsers(mappedUsers);
+                const defaultUser = mappedUsers.find(eachUser => `${defaultClient.id}` === `${eachUser.id}`);
                 if (defaultUser) {
                     setSelectedClient({
                         email: defaultUser.email,

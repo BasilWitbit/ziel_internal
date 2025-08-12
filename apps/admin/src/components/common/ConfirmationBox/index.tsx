@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button'
-import React, { type FC } from 'react'
+import { type FC } from 'react'
 
 type IProps = {
     title: string,
