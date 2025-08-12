@@ -21,5 +21,5 @@ export type EditMembersProps = {
 }
 
 export type EditNameProps = {
-    // 
+    defaultName: string
 }

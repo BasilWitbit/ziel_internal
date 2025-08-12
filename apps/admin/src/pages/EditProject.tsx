@@ -11,6 +11,7 @@ import TableComponent from "@/components/common/TableComponent/TableComponent";
 import type { ColumnDef } from "@tanstack/react-table";
 import ModelComponentWithExternalControl from "@/components/common/ModelComponent/ModelComponentWithExternalControl";
 import { capitalizeWords } from "@/utils/helpers";
+import EditModelController from "@/components/use-case/EditProjectModels/EditModelController";
 
 type ProjectType = {
     name: string,
@@ -265,7 +266,14 @@ export default function ProjectEditPage() {
                 }}
                 title={`Edit ${capitalizeWords(editModelState.key || '')}`}
             >
-                hi there
+                <EditModelController componentProps={{
+                    name: {
+                        defaultName: project.name
+                    },
+                    client: {},
+                    desc: {},
+                    members: {},
+                }} name={editModelState.key as EditOptions} />
             </ModelComponentWithExternalControl>
         </div>
     );
