@@ -1,14 +1,95 @@
 import { supabase } from '@/lib/supabaseClient';
-import type { Database } from '../../types/supabase';
 import type { ResponseData } from './mutations';
 import axios from 'axios';
 import { SUPABASE_API_KEY, SUPABASE_EDGE_BASE_URL } from '@/utils/constants';
 
-export type User = Database['public']['Tables']['Users']['Row'];
-
-export const getUsers = async (): Promise<ResponseData<User[] | null>> => {
+export const getProjectById = async (
+    projectId: string
+): Promise<ResponseData<any | null>> => {
     try {
-        const { data } = await supabase.from('Users').select("*") as unknown as { data: User[] | null };
+        // 1) Project
+        const { data: project, error: projectErr } = await supabase
+            .from("Project")
+            .select("*")
+            .eq("id", projectId)
+            .single();
+
+        if (projectErr || !project) {
+            return {
+                error: true,
+                message: projectErr?.message ?? "Project not found.",
+                data: null,
+            };
+        }
+
+        // 2) Client (optional)
+        let clientUser: any["clientUser"] = null;
+        if (project.clientId) {
+            const { data: client } = await supabase
+                .from("Users")
+                .select("id, firstName, lastName, email")
+                .eq("id", project.clientId)
+                .single();
+            if (client) clientUser = client;
+        }
+
+        // 3) Team members via your junction table, embedded user
+        const { data: memberRows, error: memberErr } = await supabase
+            .from("TeamMember__User_Project")
+            .select(
+                `
+        role,
+        startTime,
+        endTime,
+        overlappingHoursRequired,
+        requiresReporting,
+        user:Users ( id, firstName, lastName, email )
+      `
+            )
+            .eq("projectId", projectId);
+
+        if (memberErr) {
+            // Non-fatal: still return project without members
+            console.warn("Team members fetch error:", memberErr.message);
+        }
+
+        const teamMembers = (memberRows ?? [])
+            .map((row: any) => {
+                const u = row.user;
+                if (!u) return null;
+                return {
+                    id: u.id,
+                    firstName: u.firstName ?? null,
+                    lastName: u.lastName ?? null,
+                    email: u.email,
+                    role: row.role ?? null,
+                    startTime: row.startTime ?? null,
+                    endTime: row.endTime ?? null,
+                    overlappingHoursRequired: row.overlappingHoursRequired ?? null,
+                    requiresReporting: row.requiresReporting ?? null,
+                };
+            })
+            .filter(Boolean);
+
+        return {
+            error: false,
+            message: "Project fetched successfully",
+            data: { ...project, clientUser, teamMembers },
+        };
+    } catch (err) {
+        console.error("Error fetching project:", err);
+        return {
+            error: true,
+            message:
+                err instanceof Error ? err.message : "Failed to fetch the project.",
+            data: null,
+        };
+    }
+};
+
+export const getUsers = async (): Promise<ResponseData<any[] | null>> => {
+    try {
+        const { data } = await supabase.from('Users').select("*") as unknown as { data: any[] | null };
         return {
             error: false,
             message: 'Users fetched successfully',

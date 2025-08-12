@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import type { ColumnDef } from '@tanstack/react-table'
-import { FileText } from 'lucide-react'
+import { FileText, Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button';
 import { supabase } from "@/lib/supabaseClient"
 import TableComponent from '../components/common/TableComponent/TableComponent'
+import { Tooltip } from '@/components/ui/tooltip';
+import { TooltipComponent } from '@/components/TooltipComponent';
+import { capitalizeWords } from '@/utils/helpers';
 
 // Types
 interface TeamMember {
@@ -68,21 +71,21 @@ const Projects = () => {
 
             const mappedProjects: Project[] = (data ?? []).map((item: any) => ({
                 id: item.id,
-                projectName: item.name,
-                projectId: item.id,
+                projectName: capitalizeWords(item.name ?? ''),
+                projectId: capitalizeWords(item.id ?? ''),
                 clientName: item.client
-                    ? `${item.client.firstName} ${item.client.lastName}`
+                    ? capitalizeWords(`${item.client.firstName} ${item.client.lastName}`)
                     : '',
                 createdBy: item.creator
-                    ? `${item.creator.firstName} ${item.creator.lastName}`
+                    ? capitalizeWords(`${item.creator.firstName} ${item.creator.lastName}`)
                     : '',
                 createdDate: item.created_at,
                 teamMembers: (item.TeamMember__User_Project ?? []).map((tm: any) => ({
                     id: tm.userId,
                     name: tm.user
-                        ? `${tm.user.firstName} ${tm.user.lastName}`
+                        ? capitalizeWords(`${tm.user.firstName} ${tm.user.lastName}`)
                         : '',
-                    role: tm.role,
+                    role: capitalizeWords(tm.role),
                     email: tm.user?.email || '',
                 })),
             }))
@@ -111,7 +114,7 @@ const Projects = () => {
             header: 'Project Name',
             cell: ({ getValue }) => (
                 <div className="font-medium text-left">
-                    {getValue() as string}
+                    {capitalizeWords(getValue() as string)}
                 </div>
             ),
         },
@@ -119,7 +122,7 @@ const Projects = () => {
             accessorKey: 'projectId',
             header: 'Project ID',
             cell: ({ getValue }) => (
-                <div className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
+                <div className="font-mono w-max mx-auto text-sm bg-gray-100 px-2 py-1 rounded">
                     {getValue() as string}
                 </div>
             ),
@@ -129,7 +132,7 @@ const Projects = () => {
             header: 'Client Name',
             cell: ({ getValue }) => (
                 <div className="text-blue-600 font-medium">
-                    {getValue() as string}
+                    {capitalizeWords(getValue() as string)}
                 </div>
             ),
         },
@@ -148,6 +151,26 @@ const Projects = () => {
                     day: 'numeric'
                 })
             },
+        },
+        {
+            id: 'actions',
+            header: 'Actions',
+            enableSorting: false,
+            cell: ({ row }) => (
+                <div className="flex justify-center">
+                    <TooltipComponent title="Edit Project" >
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-gray-500 hover:text-blue-600"
+                            title="Edit project"
+                            onClick={() => navigate(`/project/${row.original.id}/edit`)}
+                        >
+                            <Pencil className="w-4 h-4" />
+                        </Button>
+                    </TooltipComponent>
+                </div>
+            ),
         },
     ]
 
@@ -187,7 +210,7 @@ const Projects = () => {
 
     return (
         <>
-            <div className="max-w-7xl mx-auto">
+            <div className="">
                 <div className="mb-6">
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">Projects</h1>
                     <p className="text-gray-600">Manage and view all your projects</p>
