@@ -4,6 +4,20 @@ import type { ResponseData } from './mutations';
 import axios from 'axios';
 import { SUPABASE_API_KEY, SUPABASE_EDGE_BASE_URL } from '@/utils/constants';
 
+// User type definition based on Supabase Users table
+export type User = {
+    id: string;
+    firstName?: string;
+    lastName?: string;
+    name?: string;
+    email: string;
+    role?: string;
+    slug?: string;
+    created_at?: string;
+    updated_at?: string;
+    [key: string]: any; // For additional properties
+};
+
 export const getProjectById = async (
     projectId: string
 ): Promise<ResponseData<any | null>> => {
@@ -88,9 +102,9 @@ export const getProjectById = async (
     }
 };
 
-export const getUsers = async (): Promise<ResponseData<any[] | null>> => {
+export const getUsers = async (): Promise<ResponseData<User[] | null>> => {
     try {
-        const { data } = await supabase.from('Users').select("*") as unknown as { data: any[] | null };
+        const { data } = await supabase.from('Users').select("*") as unknown as { data: User[] | null };
         return {
             error: false,
             message: 'Users fetched successfully',
@@ -102,6 +116,46 @@ export const getUsers = async (): Promise<ResponseData<any[] | null>> => {
             error: true,
             message: (err instanceof Error ? err.message : 'An error occurred while fetching users.'),
             data: null
+        };
+    }
+};
+
+export const checkProjectNameExists = async (projectName: string): Promise<ResponseData<boolean>> => {
+    try {
+        const trimmedName = projectName.trim();
+        if (!trimmedName) {
+            return {
+                error: false,
+                message: 'Project name is empty',
+                data: false
+            };
+        }
+
+        const { data, error } = await supabase
+            .from('Project')
+            .select('id, name')
+            .ilike('name', trimmedName);
+
+        if (error) {
+            throw new Error(error.message);
+        }
+
+        // Check for exact match (case-insensitive)
+        const exactMatch = data?.some(project => 
+            project.name.toLowerCase().trim() === trimmedName.toLowerCase()
+        );
+
+        return {
+            error: false,
+            message: exactMatch ? 'Project name already exists' : 'Project name is available',
+            data: !!exactMatch
+        };
+    } catch (err) {
+        console.error('Error checking project name:', err);
+        return {
+            error: true,
+            message: (err instanceof Error ? err.message : 'An error occurred while checking project name.'),
+            data: false
         };
     }
 };

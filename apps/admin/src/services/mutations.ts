@@ -144,14 +144,57 @@ export const createUser = async (userData: {
 
 export const createProject = async (projectData: ProjectData): Promise<ResponseData<any>> => {
     try {
+        // Trim and validate project name before creating
+        const trimmedProjectName = projectData.projectName.trim();
+        const trimmedProjectDescription = projectData.projectDescription.trim();
+
+        if (!trimmedProjectName) {
+            return {
+                error: true,
+                message: 'Project name is required',
+                data: null
+            };
+        }
+
+        // Check for duplicate project names one more time before creation
+        const { data: existingProjects, error: checkError } = await supabase
+            .from('Project')
+            .select('id, name')
+            .ilike('name', trimmedProjectName);
+
+        if (checkError) {
+            throw new Error(checkError.message);
+        }
+
+        // Check for exact match (case-insensitive)
+        const duplicateExists = existingProjects?.some(project => 
+            project.name.toLowerCase().trim() === trimmedProjectName.toLowerCase()
+        );
+
+        if (duplicateExists) {
+            return {
+                error: true,
+                message: 'A project with this name already exists',
+                data: null
+            };
+        }
+
         const data = await supabase.auth.getSession()
         const accessToken = data.data.session?.access_token
         if (!accessToken) {
             throw new Error("Invalid Token")
         }
+
+        // Create the project with trimmed data
+        const trimmedProjectData = {
+            ...projectData,
+            projectName: trimmedProjectName,
+            projectDescription: trimmedProjectDescription
+        };
+
         const res = await axios.post(
             `${SUPABASE_EDGE_BASE_URL}create-project`,
-            projectData,
+            trimmedProjectData,
             {
                 headers: {
                     'Content-Type': 'application/json',
@@ -167,10 +210,10 @@ export const createProject = async (projectData: ProjectData): Promise<ResponseD
         };
 
     } catch (err) {
-        console.error('Error creating user:', err);
+        console.error('Error creating project:', err);
         return {
             error: true,
-            message: (err instanceof Error ? err.message : 'An error occurred while creating the user.'),
+            message: (err instanceof Error ? err.message : 'An error occurred while creating the project.'),
             data: null
         };
     }

@@ -43,12 +43,15 @@ type IProps = {
     date: string;
     next: (payload: LogsPayload) => void;
     projectId: string;
+    initialLogs?: DayEndLogEntry[];
+    onCancel?: () => void;
 }
 
-const SingleDayForm: FC<IProps> = ({ projectName, date, next, projectId }) => {
+const SingleDayForm: FC<IProps> = ({ projectName, date, next, projectId, initialLogs = [], onCancel }) => {
     const [dayEndValues, setDayEndValues] = useState<DayEndLogEntry>(INITIAL_DAY_END_STATE);
-    const [logs, setLogs] = useState<DayEndLogEntry[]>([])
+    const [logs, setLogs] = useState<DayEndLogEntry[]>(initialLogs)
     const [showError, setShowError] = useState(false)
+    const [errorMessage, setErrorMessage] = useState('')
     return (
         <div className="flex flex-col gap-5">
             <div className="flex flex-col gap-1">
@@ -61,6 +64,7 @@ const SingleDayForm: FC<IProps> = ({ projectName, date, next, projectId }) => {
                     <div className="w-full md:w-1/4 min-w-[200px] ">
                         <Input label="Task Name" value={dayEndValues.title} onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                             setShowError(false);
+                            setErrorMessage('');
                             if (dayEndValues.title.length > 50) {
                                 return;
                             }
@@ -73,6 +77,7 @@ const SingleDayForm: FC<IProps> = ({ projectName, date, next, projectId }) => {
                     <div className="w-full md:w-1/4 min-w-[200px] ">
                         <Input label="Time Taken (hours)" type="number" value={dayEndValues.timeTaken} onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                             setShowError(false);
+                            setErrorMessage('');
                             setDayEndValues(prevState => ({
                                 ...prevState,
                                 timeTaken: +e.target.value
@@ -88,12 +93,18 @@ const SingleDayForm: FC<IProps> = ({ projectName, date, next, projectId }) => {
                     <Button size='icon' onClick={() => {
                         // validate
                         let errors = false;
-                        (Object.keys(dayEndValues) as (keyof DayEndLogEntry)[]).forEach(eachVal => {
-                            if (dayEndValues[eachVal] === '') {
-                                errors = true
-                            }
-                        })
+                        let errorMsg = '';
+                        
+                        if (!dayEndValues.title.trim()) {
+                            errors = true;
+                            errorMsg = 'Task name is required';
+                        } else if (dayEndValues.timeTaken < 0.1) {
+                            errors = true;
+                            errorMsg = 'Time taken must be at least 0.1 hours';
+                        }
+                        
                         if (errors) {
+                            setErrorMessage(errorMsg);
                             return setShowError(true)
                         }
                         setShowError(false);
@@ -105,7 +116,7 @@ const SingleDayForm: FC<IProps> = ({ projectName, date, next, projectId }) => {
                         <PlusIcon />
                     </Button>
                 </div>
-                {showError ? <p className='text-red-400 text-xs'>All inputs are required</p> : null}
+                {showError ? <p className='text-red-400 text-xs'>{errorMessage}</p> : null}
             </div>
             {logs.length > 0 ? <>
                 <div className='h-[1px] bg-gray-200 w-full'>&nbsp;</div>
@@ -149,7 +160,7 @@ const SingleDayForm: FC<IProps> = ({ projectName, date, next, projectId }) => {
                         })
                         setLogs([]);
                     }}>Save Logs for the Day</Button>
-                    <Button variant={"outline"}>Cancel</Button>
+                    <Button variant={"outline"} onClick={onCancel}>Cancel</Button>
                 </div>
             </> : null}
 
