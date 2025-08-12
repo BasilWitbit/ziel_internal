@@ -153,7 +153,7 @@ const Projects = () => {
 
     const renderTeamMembers = (project: Project) => (
         <div className="space-y-3">
-            <h4 className="text-lg font-semibold text-gray-800 border-b pb-2">
+            <h4 className="text-lg font-semibold text-gray-800 border-b border-border pb-2">
                 Team Members ({project.teamMembers.length})
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -205,7 +205,6 @@ const Projects = () => {
                             searchKeys={['projectName', 'projectId', 'clientName', 'createdBy']}
                             expandable={true}
                             renderExpandedRow={renderTeamMembers}
-
                         />
                     )}
                 </div>
