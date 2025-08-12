@@ -89,7 +89,6 @@ const NewUserComponent: FC<{
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                 setFormValues({ ...formValues, firstName: { value: e.target.value, blurred: true } })
                             }}
-
                         />
                     </div>
                     <div className="max-w-[500px]">
@@ -116,7 +115,6 @@ const NewUserComponent: FC<{
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                 setFormValues({ ...formValues, email: { value: e.target.value, blurred: true } })
                             }}
-
                         />
                     </div>
 

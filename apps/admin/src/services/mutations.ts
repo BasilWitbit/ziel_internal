@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase, supabaseAdmin } from "@/lib/supabaseClient";
-import { buildUserSlug, type User } from "./queries";
+import { buildUserSlug } from "./queries";
 import { NEW_USER_PASS, SUPABASE_EDGE_BASE_URL } from "@/utils/constants";
 import axios from "axios";
 import type { ProjectData } from "@/pages/NewProject";
@@ -11,13 +11,64 @@ export type ResponseData<T> = {
     data?: T;
 }
 
+type ChangesPayload = {
+    name?: string;
+    description?: string;
+    clientId?: string;
+}
+
+export const updateProjectDetails = async (projectId: string,
+    changes: {
+        name?: string;
+        description?: string;
+        clientUserId?: string;
+    }
+): Promise<ResponseData<null>> => {
+    try {
+        const payload: ChangesPayload = {};
+        if (changes.name) {
+            payload.name = changes.name;
+        }
+        if (changes.description) {
+            payload.description = changes.description;
+        }
+        if (changes.clientUserId) {
+            payload.clientId = changes.clientUserId;
+        }
+
+        const { error } = await supabase
+            .from('Project')
+            .update(payload)
+            .eq('id', projectId);
+
+        if (error) {
+            throw new Error(error.message || 'Failed to update project details');
+        }
+
+        return {
+            error: false,
+            message: 'Project Details updated successfully',
+            data: null
+        };
+
+    } catch (err) {
+        console.error('Error updating user status:', err);
+        return {
+            error: true,
+            message: (err instanceof Error ? err.message : 'An error occurred while updating user status.'),
+            data: null
+        };
+    }
+}
+
+
 export const createUser = async (userData: {
     firstName: string,
     lastName?: string,
     email: string,
     isAdmin: boolean,
     isClient?: boolean
-}): Promise<ResponseData<User | null>> => {
+}): Promise<ResponseData<any | null>> => {
     try {
         const fullName = `${userData.firstName} ${userData.lastName ?? ''}`.trim();
 
