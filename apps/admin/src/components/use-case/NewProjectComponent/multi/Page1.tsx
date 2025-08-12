@@ -79,6 +79,7 @@ const Page1: FC<IProps> = ({ next, back, defaultValues }) => {
     };
 
     const handleChange = (name: Fields, value: string) => {
+        validateField(name, formData[name].value);
         setErrors((prev) => ({ ...prev, [name]: '' }));
         setFormData((prev) => ({
             ...prev,
@@ -91,7 +92,7 @@ const Page1: FC<IProps> = ({ next, back, defaultValues }) => {
     };
 
     const handleBlur = (name: Fields) => {
-        validateField(name, formData[name].value);
+
         setFormData((prev) => ({
             ...prev,
             [name]: {

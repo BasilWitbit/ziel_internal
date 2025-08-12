@@ -4,7 +4,7 @@ import type { ColumnDef } from '@tanstack/react-table'
 import { FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button';
 import { supabase } from "@/lib/supabaseClient"
-import TableComponent from '../components/common/TableComponent/TableComponent' 
+import TableComponent from '../components/common/TableComponent/TableComponent'
 
 // Types
 interface TeamMember {
@@ -186,7 +186,7 @@ const Projects = () => {
     )
 
     return (
-        <div className="p-6 bg-gray-50 min-h-screen">
+        <>
             <div className="max-w-7xl mx-auto">
                 <div className="mb-6">
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">Projects</h1>
@@ -205,12 +205,12 @@ const Projects = () => {
                             searchKeys={['projectName', 'projectId', 'clientName', 'createdBy']}
                             expandable={true}
                             renderExpandedRow={renderTeamMembers}
-                            
+
                         />
                     )}
                 </div>
             </div>
-        </div>
+        </>
     )
 }
 

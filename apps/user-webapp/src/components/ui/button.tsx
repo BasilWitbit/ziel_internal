@@ -48,12 +48,13 @@ function Button({
   variant,
   size,
   loading,
+  disabled: disabledProps,
   asChild = false,
   ...props
 }: ButtonProps) {
   const Comp = asChild ? Slot : "button"
 
-  const isDisabled = Boolean(loading || props.disabled)
+  const isDisabled = Boolean(loading || disabledProps)
 
   // Prevent clicks when loading even if rendered asChild
   const onClick =
