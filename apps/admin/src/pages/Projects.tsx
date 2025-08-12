@@ -5,7 +5,6 @@ import { FileText, Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button';
 import { supabase } from "@/lib/supabaseClient"
 import TableComponent from '../components/common/TableComponent/TableComponent'
-import { Tooltip } from '@/components/ui/tooltip';
 import { TooltipComponent } from '@/components/TooltipComponent';
 import { capitalizeWords } from '@/utils/helpers';
 

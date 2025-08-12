@@ -3,7 +3,6 @@ import React, { type FC } from 'react'
 import EditName from './EditName'
 import EditDesc from './EditDesc'
 import EditClient from './EditClient'
-import EditMembers from './EditMembers'
 import type { CommonProps, ComponentProps } from './types'
 
 type IProps = {
@@ -42,13 +41,7 @@ const EditModelController: FC<IProps> = ({ name, componentProps, commonProps }) 
                     {...componentProps?.desc}
                 />
             </Layout>
-        case "members":
-            return <Layout>
-                <EditMembers
-                    {...commonProps}
-                    {...componentProps?.members}
-                />
-            </Layout>
+
     }
 }
 
