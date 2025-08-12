@@ -41,7 +41,7 @@ const MultiStepControllerLogs: FC<IProps> = ({ logs, afterSubmission }) => {
                     projectId={currentLog.projectId}
                     projectName={currentLog.projectName} />
             </> : <div className="flex flex-col gap-2">
-                <Button disabled={loading} onClick={() => {
+                <Button loading={loading} onClick={() => {
                     setLoading(true)
                     const payload = groupByProjectNameWithDates(data);
                     addDayEndLogsOfUser(payload).then((res) => {

@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button'
 import type { ProjectData, TeamMember } from '@/pages/NewProject'
-import { type FC } from 'react'
+import { useState, type FC } from 'react'
 import UsersTable from './UsersTable'
 import { capitalizeWords } from '@/utils/helpers'
 import { useUserStore } from '@/store/userStore'
@@ -31,19 +31,25 @@ const Page4: FC<IProps> = ({ projectData, back, complete }) => {
             }
         }
     }).filter((eachUser) => !!eachUser);
+    const [loading, setLoading] = useState(false);
 
     return (
         <section className='flex flex-col gap-5'>
             <h1 className='font-bold text-xl'>Project Details</h1>
             <div className="flex gap-2">
                 <Button variant={'outline'} className='min-w-[100px]' onClick={back}>Back</Button>
-                <Button className='min-w-[100px] bg-primary' onClick={() => {
+                <Button loading={loading} className='min-w-[100px] bg-primary' onClick={() => {
+                    setLoading(true);
                     createProject(projectData).then(res => {
                         if (res.error) {
                             return toast.error(res.message)
                         }
                         complete();
-                    })
+                    }).catch(err => {
+                        return toast.error(`Error creating project: ${err.message || 'Unknown error'}`);
+                    }).finally(() => {
+                        setLoading(false);
+                    });
                 }}>Create Project</Button>
             </div>
             <div className="flex flex-col gap-3">

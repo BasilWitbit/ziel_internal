@@ -13,6 +13,7 @@ type FormData = {
 }
 
 const useLogin = () => {
+    const [loading, setLoading] = useState(false);
     const { login } = useAuth();
 
     const [formData, setFormData] = useState<FormData>({
@@ -42,16 +43,19 @@ const useLogin = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            setLoading(true);
             await login(formData.username.value, formData.password.value);
             // navigate("/projects"); // Redirect to protected page
         } catch (error: any) {
             setErrorMsg(error.message);
+        } finally {
+            setLoading(false);
         }
     };
 
 
 
-    return { formData, updateFormValue, handleSubmit, errorMsg }
+    return { formData, updateFormValue, handleSubmit, errorMsg, loading }
 }
 
 export default useLogin

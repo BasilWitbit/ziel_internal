@@ -34,7 +34,7 @@ interface NavigationState {
 const UserTimelogScreen = () => {
   const location = useLocation();
   const navigationState = location.state as NavigationState | null;
-  
+
   // Use passed data or fallback to default
   const userData = navigationState?.user || {
     id: '', // Empty ID to prevent invalid UUID error
@@ -55,14 +55,14 @@ const UserTimelogScreen = () => {
     const days = [];
     const today = new Date();
     const createdDate = new Date(userCreatedDate);
-    
+
     // Start from today and go backwards to user creation date
-    let currentDate = new Date(today);
+    const currentDate = new Date(today);
     while (currentDate >= createdDate) {
       days.push(currentDate.toISOString().split('T')[0]); // YYYY-MM-DD format
       currentDate.setDate(currentDate.getDate() - 1);
     }
-    
+
     return days; // Already in reverse chronological order (today first)
   };
 
@@ -117,7 +117,7 @@ const UserTimelogScreen = () => {
         // Fetch entries for all found logs
         const logIds = (dayEndLogs || []).map(log => log.id);
         let dayEndLogEntries: any[] = [];
-        
+
         if (logIds.length > 0) {
           const { data: entries, error: entriesError } = await supabase
             .from('DayEndLogEntry')
@@ -141,7 +141,7 @@ const UserTimelogScreen = () => {
         // Generate dates from user creation to today
         const userCreationDate = userDetails?.created_at || new Date().toISOString();
         const userDates = generateUserDates(userCreationDate);
-        
+
         // Create a map of logs by date with their entries
         const logsByDate = new Map();
         (dayEndLogs || []).forEach((log: any) => {
@@ -149,7 +149,7 @@ const UserTimelogScreen = () => {
           if (!logsByDate.has(logDate)) {
             logsByDate.set(logDate, []);
           }
-          
+
           // Find entries for this log
           const logEntries = dayEndLogEntries.filter(entry => entry.dayEndLogId === log.id);
           logsByDate.get(logDate).push({
@@ -169,7 +169,7 @@ const UserTimelogScreen = () => {
           });
 
           const dayLogs = logsByDate.get(dateStr) || [];
-          
+
           // Extract tasks from all logs for this day
           const tasks: TaskData[] = [];
           dayLogs.forEach((log: any) => {
@@ -323,13 +323,13 @@ const UserTimelogScreen = () => {
         <h2 className="text-3xl font-bold text-gray-900 mb-2">{userData.name}</h2>
         <p className="text-gray-600 mb-2">Project Name: {projectName}</p>
         <p className="text-gray-600 mb-4">Role: {userData.role} • Email: {userData.email}</p>
-        
+
         <div className="mb-4">
           <h3 className="font-semibold text-gray-900 mb-2">Summary</h3>
           <p className="text-gray-600">Total Completed Logs: {completedLogs}</p>
           <p className="text-gray-600">Total Pending Logs: {pendingLogs}</p>
         </div>
-        
+
         <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
           📧 Generate Report
         </button>
@@ -339,22 +339,20 @@ const UserTimelogScreen = () => {
       <div className="mb-6">
         <div className="flex space-x-1 bg-gray-100 rounded-lg p-1 inline-flex">
           <Button
-            className={`px-4 py-2 rounded-md font-medium transition-colors ${
-              filter === 'All Timelogs'
+            className={`px-4 py-2 rounded-md font-medium transition-colors ${filter === 'All Timelogs'
                 ? 'bg-white shadow-sm text-gray-900'
                 : 'text-gray-600 hover:text-gray-900'
-            }`}
+              }`}
             variant="ghost"
             onClick={() => setFilter('All Timelogs')}
           >
             All Timelogs
           </Button>
           <Button
-            className={`px-4 py-2 rounded-md font-medium transition-colors relative ${
-              filter === 'Pending Timelogs'
+            className={`px-4 py-2 rounded-md font-medium transition-colors relative ${filter === 'Pending Timelogs'
                 ? 'bg-white shadow-sm text-gray-900'
                 : 'text-gray-600 hover:text-gray-900'
-            }`}
+              }`}
             variant="ghost"
             onClick={() => setFilter('Pending Timelogs')}
           >
@@ -364,11 +362,10 @@ const UserTimelogScreen = () => {
             </span>
           </Button>
           <Button
-            className={`px-4 py-2 rounded-md font-medium transition-colors ${
-              filter === 'Completed Timelogs'
+            className={`px-4 py-2 rounded-md font-medium transition-colors ${filter === 'Completed Timelogs'
                 ? 'bg-white shadow-sm text-gray-900'
                 : 'text-gray-600 hover:text-gray-900'
-            }`}
+              }`}
             variant="ghost"
             onClick={() => setFilter('Completed Timelogs')}
           >
@@ -396,8 +393,8 @@ const UserTimelogScreen = () => {
           Dates per Page {itemsPerPage} • {startIndex + 1}-{Math.min(endIndex, totalItems)} of {totalItems}
         </span>
         <div className="flex space-x-2">
-          <Button 
-            className="px-3 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors disabled:opacity-50" 
+          <Button
+            className="px-3 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors disabled:opacity-50"
             variant="outline"
             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
             disabled={currentPage === 1}
@@ -407,8 +404,8 @@ const UserTimelogScreen = () => {
           <span className="px-3 py-1 text-gray-700">
             Page {currentPage} of {totalPages}
           </span>
-          <Button 
-            className="px-3 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors disabled:opacity-50" 
+          <Button
+            className="px-3 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors disabled:opacity-50"
             variant="outline"
             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
             disabled={currentPage === totalPages || totalPages === 0}

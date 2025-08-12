@@ -8,6 +8,7 @@ const LoginComponent = () => {
         errorMsg,
         handleSubmit,
         updateFormValue,
+        loading
     } = useLogin();
 
     return (
@@ -27,7 +28,7 @@ const LoginComponent = () => {
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormValue(e.target.value, 'password')}
                 />
                 {errorMsg && <p className="text-red-500 text-sm">{errorMsg}</p>}
-                <Button type="submit">Login</Button>
+                <Button loading={loading} type="submit">Login</Button>
             </form>
         </div>
     )

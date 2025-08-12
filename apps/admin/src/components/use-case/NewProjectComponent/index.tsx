@@ -133,8 +133,8 @@ const NewProjectComponent: FC<IProps> = ({ next }) => {
                 </div>
             </div>
             {/* Submit Button */}
-            <Button type="submit" disabled={loading}>
-                {loading ? "Submitting..." : "Create Project"}
+            <Button type="submit" loading={loading}>
+                Create Project
             </Button>
         </form>
     );

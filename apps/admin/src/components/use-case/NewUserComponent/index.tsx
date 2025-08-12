@@ -133,8 +133,8 @@ const NewUserComponent: FC<{
                 )}
 
                 <div className="flex flex-col gap-2">
-                    <Button disabled={!(allBlurred && allFilled) || loading} type="submit" className='self-start min-w-[170px]'>
-                        {loading ? 'Creating...' : 'Create User'}
+                    <Button disabled={!(allBlurred && allFilled)} loading={loading} type="submit" className='self-start min-w-[170px]'>
+                        Create User
                     </Button>
                 </div>
             </form>

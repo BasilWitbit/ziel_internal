@@ -143,8 +143,8 @@ const FirstTimePassword = () => {
                         {err}
                     </p>
                 ))}
-                <Button disabled={disableBtn} type="submit">
-                    {loading ? 'Submitting...' : 'Create Password'}
+                <Button disabled={disableBtn} loading={loading} type="submit">
+                    Create Password
                 </Button>
             </form>
         </div>

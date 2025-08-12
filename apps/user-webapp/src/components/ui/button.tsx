@@ -2,6 +2,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
+import { LoaderCircle } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -39,24 +40,54 @@ const buttonVariants = cva(
 type ButtonProps = React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean
+    loading?: boolean
   }
 
 function Button({
   className,
   variant,
   size,
+  loading,
   asChild = false,
   ...props
 }: ButtonProps) {
   const Comp = asChild ? Slot : "button"
 
+  const isDisabled = Boolean(loading || props.disabled)
+
+  // Prevent clicks when loading even if rendered asChild
+  const onClick =
+    isDisabled
+      ? (e: React.MouseEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
+      }
+      : props.onClick
+
   return (
     <Comp
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
+      aria-disabled={isDisabled || undefined}
+      // Only set the native disabled attribute when it's an actual <button>
+      {...(!asChild ? { disabled: isDisabled } : {})}
       {...props}
-    />
+      onClick={onClick}
+    >
+      {loading && (
+        <LoaderCircle
+          aria-hidden="true"
+          className={cn(
+            "animate-spin",
+            // keep icon sizes aligned with button size variants
+            size === "sm" ? "size-3.5" : size === "lg" ? "size-4.5" : "size-4"
+          )}
+        />
+      )}
+      {props.children}
+    </Comp>
   )
 }
 
-export { Button, buttonVariants, type ButtonProps }
+export { Button, buttonVariants }
+export type { ButtonProps }
