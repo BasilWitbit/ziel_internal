@@ -28,7 +28,7 @@ export type ProjectType = {
     projectId: string
 }
 
-const DayEngLogFormProvider: FC<IProps> = ({ children }) => {
+const DayEndLogFormProvider: FC<IProps> = ({ children }) => {
     const { isAuthenticated } = useAuth();
     const [openDayEndLogModel, setOpenDayEndLogModel] = useState(false);
     const [missingLogs, setMissingLogs] = useState<ProjectType[]>([]);
@@ -76,4 +76,4 @@ const DayEngLogFormProvider: FC<IProps> = ({ children }) => {
     )
 }
 
-export default DayEngLogFormProvider
+export default DayEndLogFormProvider

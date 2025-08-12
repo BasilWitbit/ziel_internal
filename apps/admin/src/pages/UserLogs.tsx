@@ -127,9 +127,9 @@ const UserTimelogScreen = () => {
               task_description,
               timeTakenInHours,
               type,
-              dayEngLogId
+              dayEndLogId
             `)
-            .in('dayEngLogId', logIds);
+            .in('dayEndLogId', logIds);
 
           if (entriesError) {
             console.error('Error fetching log entries:', entriesError);
@@ -151,7 +151,7 @@ const UserTimelogScreen = () => {
           }
           
           // Find entries for this log
-          const logEntries = dayEndLogEntries.filter(entry => entry.dayEngLogId === log.id);
+          const logEntries = dayEndLogEntries.filter(entry => entry.dayEndLogId === log.id);
           logsByDate.get(logDate).push({
             ...log,
             entries: logEntries
