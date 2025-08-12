@@ -9,8 +9,8 @@ import {
 import type { SortingState, ColumnDef, ExpandedState } from '@tanstack/react-table'
 import { Input } from '@/components/ui/input'
 import FuzzySearch from 'fuzzy-search'
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import { ChevronRight } from 'lucide-react'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 type TableComponentProps<TData> = {
     data: TData[]

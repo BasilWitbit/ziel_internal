@@ -3,6 +3,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { typedEntries } from '@/utils/helpers'
 import React, { useEffect, useState, type FC } from 'react'
+import { checkProjectNameExists } from '@/services/queries'
 
 type FormVal<K = string> = {
     value: K,
@@ -42,6 +43,8 @@ const INITIAL_FORM_VALS = {
 const Page1: FC<IProps> = ({ next, back, defaultValues }) => {
     const [formData, setFormData] = useState<FormData>(INITIAL_FORM_VALS.state)
     const [errors, setErrors] = useState<FormDataAsStrings>(INITIAL_FORM_VALS.error)
+    const [isValidating, setIsValidating] = useState(false)
+    const [isSubmitting, setIsSubmitting] = useState(false)
 
     useEffect(() => {
         setFormData({
@@ -62,13 +65,29 @@ const Page1: FC<IProps> = ({ next, back, defaultValues }) => {
     }
 
     // Validation function
-    const validateField = (field: Fields, value: string) => {
+    const validateField = async (field: Fields, value: string) => {
         let error = "";
+        const trimmedValue = value.trim();
 
         switch (field) {
             case "projectName":
-                if (value.trim() === '' || !value) {
-                    error = 'Name is required'
+                if (trimmedValue === '' || !trimmedValue) {
+                    error = 'Project name is required';
+                } else {
+                    // Check for duplicate project names
+                    setIsValidating(true);
+                    try {
+                        const result = await checkProjectNameExists(trimmedValue);
+                        if (result.error) {
+                            error = 'Error checking project name availability';
+                        } else if (result.data) {
+                            error = 'A project with this name already exists';
+                        }
+                    } catch (err) {
+                        error = 'Error validating project name';
+                    } finally {
+                        setIsValidating(false);
+                    }
                 }
                 break;
             case "projectDescription":
@@ -76,23 +95,22 @@ const Page1: FC<IProps> = ({ next, back, defaultValues }) => {
         }
 
         setErrors((prev) => ({ ...prev, [field]: error }));
+        return error === "";
     };
 
     const handleChange = (name: Fields, value: string) => {
-        validateField(name, formData[name].value);
+        // Clear error immediately on change
         setErrors((prev) => ({ ...prev, [name]: '' }));
         setFormData((prev) => ({
             ...prev,
             [name]: {
                 ...prev[name],
                 value,
-
             }
         }));
     };
 
-    const handleBlur = (name: Fields) => {
-
+    const handleBlur = async (name: Fields) => {
         setFormData((prev) => ({
             ...prev,
             [name]: {
@@ -100,6 +118,9 @@ const Page1: FC<IProps> = ({ next, back, defaultValues }) => {
                 blurred: true
             }
         }));
+
+        // Validate field on blur
+        await validateField(name, formData[name].value);
     };
 
     const hasErrors = Object.values(errors).some((err) => err !== "");
@@ -108,23 +129,31 @@ const Page1: FC<IProps> = ({ next, back, defaultValues }) => {
     return (
         <section className='flex flex-col gap-3'>
             <h1 className='font-bold text-xl'>Basic Information</h1>
-            <form onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
+            <form onSubmit={async (e: React.FormEvent<HTMLFormElement>) => {
                 e.preventDefault();
+                setIsSubmitting(true);
 
+                // Validate all fields
+                let isValid = true;
                 for (const el in formData) {
                     const field = el as Fields
-                    validateField(field, formData[field].value)
+                    const fieldValid = await validateField(field, formData[field].value);
+                    if (!fieldValid) {
+                        isValid = false;
+                    }
                 }
 
-                if (!hasErrors && allBlurred) {
+                if (isValid && allBlurred) {
                     const temp: FormDataAsOptionalStrings = {};
                     typedEntries(formData).forEach(([key, val]) => {
-                        temp[key] = val.value;
+                        // Trim the values before submitting
+                        temp[key] = val.value.trim();
                     });
 
                     next(temp as FormDataAsStrings)
                 }
-
+                
+                setIsSubmitting(false);
             }} className='flex flex-col gap-3'>
                 <div className="flex flex-col gap-1">
                     <Input
@@ -135,7 +164,11 @@ const Page1: FC<IProps> = ({ next, back, defaultValues }) => {
                         }}
                         onBlur={() => handleBlur('projectName')}
                         label="Name of Project"
+                        disabled={isValidating}
                     />
+                    {isValidating && formData.projectName.value.trim() ? (
+                        <p className='text-blue-600 text-sm'>Checking availability...</p>
+                    ) : null}
                     {errors.projectName ? <p className='text-destructive'>{errors.projectName}</p> : null}
                 </div>
                 <div className="flex flex-col gap-1">
@@ -158,11 +191,17 @@ const Page1: FC<IProps> = ({ next, back, defaultValues }) => {
                     {errors.projectDescription ? <p className='text-destructive'>{errors.projectDescription}</p> : null}
                 </div>
                 <div className="flex gap-2">
-                    <Button type="submit" disabled={hasErrors || !allBlurred}>Next</Button>
+                    <Button 
+                        type="submit" 
+                        disabled={hasErrors || !allBlurred || isValidating || isSubmitting}
+                        loading={isSubmitting}
+                    >
+                        {isValidating ? 'Validating...' : 'Next'}
+                    </Button>
                     <Button onClick={() => {
                         back()
                         INITIALIZE_FORM_STATES()
-                    }} variant={"outline"}>Cancel</Button>
+                    }} variant={"outline"} disabled={isSubmitting}>Cancel</Button>
                 </div>
             </form>
         </section>

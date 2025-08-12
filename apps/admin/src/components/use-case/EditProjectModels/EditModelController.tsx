@@ -1,5 +1,5 @@
 import type { EditOptions } from '@/pages/EditProject'
-import React, { type FC } from 'react'
+import { type FC } from 'react'
 import EditName from './EditName'
 import EditDesc from './EditDesc'
 import EditClient from './EditClient'
