@@ -96,7 +96,6 @@ const UserTimelogScreen = () => {
           .select(`
             id,
             created_at,
-            createdByMember,
             createdByUserId,
             projectId
           `)
@@ -126,6 +125,7 @@ const UserTimelogScreen = () => {
               id,
               created_at,
               task_description,
+              featureTitle,
               timeTakenInHours,
               type,
               dayEndLogId
