@@ -3,7 +3,7 @@ import { supabase, supabaseAdmin } from "@/lib/supabaseClient";
 import { buildUserSlug } from "./queries";
 import { NEW_USER_PASS, SUPABASE_EDGE_BASE_URL } from "@/utils/constants";
 import axios from "axios";
-import type { ProjectData } from "@/pages/NewProject";
+import type { ProjectData, TeamMember } from "@/pages/NewProject";
 
 export type ResponseData<T> = {
     error?: boolean;
@@ -16,6 +16,59 @@ type ChangesPayload = {
     description?: string;
     clientId?: string;
 }
+
+
+export const updateProjectTeamMembers = async (
+    projectId: string,
+    teamMembers: TeamMember[]
+): Promise<ResponseData<null>> => {
+    try {
+        // Step 1: Delete all existing team members for this project
+        const { error: deleteError } = await supabase
+            .from("TeamMember__User_Project")
+            .delete()
+            .eq("projectId", projectId);
+
+        if (deleteError) {
+            throw new Error(deleteError.message || "Failed to remove existing team members");
+        }
+
+        // Step 2: Insert updated team member list
+        const insertPayload = teamMembers.map((member) => ({
+            projectId,
+            userId: member.id,
+            role: member.role,
+            startTime: member.startTime,
+            endTime: member.endTime,
+            overlappingHoursRequired: member.overlappingHoursRequired ?? 0,
+            requiresReporting: member.requiresReporting,
+        }));
+
+        const { error: insertError } = await supabase
+            .from("TeamMember__User_Project")
+            .insert(insertPayload);
+
+        if (insertError) {
+            throw new Error(insertError.message || "Failed to add new team members");
+        }
+
+        return {
+            error: false,
+            message: "Team members updated successfully",
+            data: null,
+        };
+    } catch (err) {
+        console.error("Error updating team members:", err);
+        return {
+            error: true,
+            message:
+                err instanceof Error
+                    ? err.message
+                    : "An error occurred while updating team members.",
+            data: null,
+        };
+    }
+};
 
 export const updateProjectDetails = async (projectId: string,
     changes: {
@@ -167,7 +220,7 @@ export const createProject = async (projectData: ProjectData): Promise<ResponseD
         }
 
         // Check for exact match (case-insensitive)
-        const duplicateExists = existingProjects?.some(project => 
+        const duplicateExists = existingProjects?.some(project =>
             project.name.toLowerCase().trim() === trimmedProjectName.toLowerCase()
         );
 

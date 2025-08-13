@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router';
 import { supabase } from '@/lib/supabaseClient';
@@ -340,8 +341,8 @@ const UserTimelogScreen = () => {
         <div className="flex space-x-1 bg-gray-100 rounded-lg p-1 inline-flex">
           <Button
             className={`px-4 py-2 rounded-md font-medium transition-colors ${filter === 'All Timelogs'
-                ? 'bg-white shadow-sm text-gray-900'
-                : 'text-gray-600 hover:text-gray-900'
+              ? 'bg-white shadow-sm text-gray-900'
+              : 'text-gray-600 hover:text-gray-900'
               }`}
             variant="ghost"
             onClick={() => setFilter('All Timelogs')}
@@ -350,21 +351,21 @@ const UserTimelogScreen = () => {
           </Button>
           <Button
             className={`px-4 py-2 rounded-md font-medium transition-colors relative ${filter === 'Pending Timelogs'
-                ? 'bg-white shadow-sm text-gray-900'
-                : 'text-gray-600 hover:text-gray-900'
+              ? 'bg-white shadow-sm text-gray-900'
+              : 'text-gray-600 hover:text-gray-900'
               }`}
             variant="ghost"
             onClick={() => setFilter('Pending Timelogs')}
           >
             Pending Timelogs
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+            {pendingLogs !== 0 ? <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
               {pendingLogs}
-            </span>
+            </span> : null}
           </Button>
           <Button
             className={`px-4 py-2 rounded-md font-medium transition-colors ${filter === 'Completed Timelogs'
-                ? 'bg-white shadow-sm text-gray-900'
-                : 'text-gray-600 hover:text-gray-900'
+              ? 'bg-white shadow-sm text-gray-900'
+              : 'text-gray-600 hover:text-gray-900'
               }`}
             variant="ghost"
             onClick={() => setFilter('Completed Timelogs')}
