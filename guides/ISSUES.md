@@ -53,3 +53,17 @@ Choose **one** of the following:
 2. Ensure there are missed logs for 2 days.
 3. Upon login, the Pending Logs modal automatically appears.
 4. Observe duplication in steps.
+
+---
+
+### **Expected Behavior**
+- What should happen if the feature works correctly.
+- Be specific about UI state, data saved, and any notifications.
+- Example: “One step per unique project/date (4 steps total for 2 projects × 2 days).”
+
+---
+
+### **Actual Behavior**
+- What actually happens.
+- Include exact error messages, screenshots, or a short screen recording if possible.
+- Example: “The modal shows 8 steps, duplicating each project/date combination.”
