@@ -1,4 +1,8 @@
-# Turborepo starter
+# Bug Reporting
+
+[📄 Issue Reporting Guidelines](./guides/ISSUES.md)
+
+## Turborepo starter
 
 This Turborepo starter is maintained by the Turborepo core team.
 
