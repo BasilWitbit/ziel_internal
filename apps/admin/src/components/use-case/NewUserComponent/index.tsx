@@ -3,8 +3,8 @@ import { Input } from '@/components/ui/input'
 import { useState, type FC } from 'react'
 import { toast } from 'sonner'
 import type { UserCategories } from '../UsersComponent/UsersLayout'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Label } from '@/components/ui/label'
+// import { Checkbox } from '@/components/ui/checkbox'
+// import { Label } from '@/components/ui/label'
 import { useNavigate } from 'react-router'
 import { createUser } from '@/services/mutations'
 
@@ -25,7 +25,7 @@ const NewUserComponent: FC<{
     disableRelocate?: boolean,
     getAddedUserData?: (user: unknown) => void;
 }> = ({
-    defaultUserType = 'users',
+    // defaultUserType = 'users',
     clientMode,
     disableRelocate,
     getAddedUserData
@@ -36,7 +36,8 @@ const NewUserComponent: FC<{
             email: { value: '', blurred: false },
         })
 
-        const [isAdmin, setIsAdmin] = useState(defaultUserType === 'admins');
+        // const [isAdmin, setIsAdmin] = useState(defaultUserType === 'admins');
+        const isAdmin = false;
         const [loading, setLoading] = useState(false);
         const navigate = useNavigate();
 
@@ -120,7 +121,7 @@ const NewUserComponent: FC<{
 
                 </div>
 
-                {!clientMode && (
+                {/* {!clientMode && (
                     <div className="flex items-center gap-2">
                         <Checkbox id='isAdmin'
                             checked={isAdmin}
@@ -128,7 +129,7 @@ const NewUserComponent: FC<{
                         />
                         <Label htmlFor="isAdmin">Is this an Admin User?</Label>
                     </div>
-                )}
+                )} */}
 
                 <div className="flex flex-col gap-2">
                     <Button disabled={!(allBlurred && allFilled)} loading={loading} type="submit" className='self-start min-w-[170px]'>
