@@ -35,7 +35,7 @@ const DayEndLogFormProvider: FC<IProps> = ({ children }) => {
     const { userData } = useAuth();
     useEffect(() => {
         if (isAuthenticated) {
-            if (userData?.userId) {
+            if (userData?.userId && !userData?.isNewUser) {
                 getPendingLogs(userData.userId).then(res => {
                     if (res.error || !res.data) {
                         return toast.error("Failed to fetch Pending Logs")
