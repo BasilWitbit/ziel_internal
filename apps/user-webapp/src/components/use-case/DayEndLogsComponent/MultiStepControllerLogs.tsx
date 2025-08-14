@@ -92,17 +92,17 @@ const MultiStepControllerLogs: FC<IProps> = ({ logs, afterSubmission }) => {
                         Back to Edit
                     </Button>
                     <Button loading={loading} onClick={() => {
-                        // setLoading(true)
-                        // const payload = ;
-                        // addDayEndLogsOfUser(payload).then((res) => {
-                        //     if (res.error) {
-                        //         return toast.error("Something went wrong, contact admin")
-                        //     }
-                        //     toast.success('Successfully Added Day End Logs!');
-                        //     afterSubmission()
-                        // }).catch(err => {
-                        //     toast.error(err.message ?? "Something went wrong")
-                        // }).finally(() => setLoading(false));
+                        setLoading(true)
+                        const payload = groupByProjectNameWithDates(data);
+                        addDayEndLogsOfUser(payload).then((res) => {
+                            if (res.error) {
+                                return toast.error("Something went wrong, contact admin")
+                            }
+                            toast.success('Successfully Added Day End Logs!');
+                            afterSubmission()
+                        }).catch(err => {
+                            toast.error(err.message ?? "Something went wrong")
+                        }).finally(() => setLoading(false));
                         console.log(groupByProjectNameWithDates(data))
                     }}>Submit All Logs</Button>
                 </div>
