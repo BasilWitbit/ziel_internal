@@ -18,6 +18,7 @@ interface TimelogData {
   date: string;
   status: string;
   tasks?: TaskData[];
+  createdAt: string;
 }
 
 interface TeamMember {
@@ -189,10 +190,17 @@ const UserTimelogScreen = () => {
           // Even if DayEndLog exists, if there are no entries, it should be Pending
           const status = tasks.length > 0 ? 'Completed' : 'Pending';
 
+          // Use the created_at of the first log for this date, or fallback to dateStr
+          let createdAt = dateStr;
+          if (dayLogs.length > 0 && dayLogs[0].created_at) {
+            createdAt = new Date(dayLogs[0].created_at).toISOString().split('T')[0];
+          }
+
           return {
             date: formattedDate,
             status: status,
-            tasks
+            tasks,
+            createdAt: status === "Completed" ? createdAt : ""
           };
         });
         console.log({ timelogData })
@@ -287,6 +295,10 @@ const UserTimelogScreen = () => {
       accessorKey: 'status',
       cell: ({ row }) => getStatusBadge(row.original.status),
     },
+    {
+      header: 'Created At',
+      accessorKey: 'createdAt'
+    }
   ];
 
   // Filter data based on selected filter
@@ -344,7 +356,7 @@ const UserTimelogScreen = () => {
 
       {/* Filter Tabs */}
       <div className="mb-6">
-        <div className="flex space-x-1 bg-gray-100 rounded-lg p-1 inline-flex">
+        <div className="flex space-x-1 bg-gray-100 rounded-lg p-1 ">
           <Button
             className={`px-4 py-2 rounded-md font-medium transition-colors ${filter === 'All Timelogs'
               ? 'bg-white shadow-sm text-gray-900'
