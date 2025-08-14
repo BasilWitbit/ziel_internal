@@ -10,7 +10,8 @@ import { Button } from '@/components/ui/button';
 interface TaskData {
   time: number;
   type: string;
-  title: string;
+  task_description: string;
+  featureTitle: string;
 }
 
 interface TimelogData {
@@ -178,7 +179,8 @@ const UserTimelogScreen = () => {
               tasks.push({
                 time: entry.timeTakenInHours || 0,
                 type: entry.type || 'Task', // Use actual type from database
-                title: entry.task_description || 'No description'
+                task_description: entry.task_description || 'No description',
+                featureTitle: entry.featureTitle || 'No Feature Title'
               });
             });
           });
@@ -193,7 +195,7 @@ const UserTimelogScreen = () => {
             tasks
           };
         });
-
+        console.log({ timelogData })
         setData(timelogData);
         setLoading(false);
       } catch (error) {
@@ -247,8 +249,12 @@ const UserTimelogScreen = () => {
       },
       {
         header: 'Task Title',
-        accessorKey: 'title',
+        accessorKey: 'task_description',
       },
+      {
+        header: 'Feature Title',
+        accessorKey: 'featureTitle',
+      }
     ];
 
     return (
