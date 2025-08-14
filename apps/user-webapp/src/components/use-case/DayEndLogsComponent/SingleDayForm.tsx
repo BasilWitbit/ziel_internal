@@ -7,7 +7,7 @@ import React, { useState, type FC } from 'react'
 import type { LogsPayload } from './MultiStepControllerLogs'
 
 
-type EntryTypes = 'meeting' | 'task' | 'bug'
+type EntryTypes = 'meeting' | 'task' | 'bug' | 'break'
 
 export type DayEndLogEntry = {
     type: EntryTypes,
@@ -33,6 +33,10 @@ const entryTypeOptions: Option<EntryTypes>[] = [
     {
         label: "Bug",
         value: 'bug'
+    },
+    {
+        label: "Break",
+        value: 'break'
     }
 ]
 
