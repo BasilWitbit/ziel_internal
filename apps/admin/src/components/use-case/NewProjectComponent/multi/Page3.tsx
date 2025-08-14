@@ -24,6 +24,11 @@ const Page3: FC<IProps> = ({ next, back, defaultSelectedUsers }) => {
 
     const [openUserModel, setOpenUserModel] = useState(false);
 
+    const removeTeamMember = (userId: string) => {
+
+        setUsersList((prev) => prev.filter((m) => m.id !== userId));
+    };
+
     return (
         <section className='flex flex-col gap-5'>
             <h1 className='font-bold text-xl'>Team Managed</h1>
@@ -33,7 +38,7 @@ const Page3: FC<IProps> = ({ next, back, defaultSelectedUsers }) => {
             </div>
             {usersList.length > 0 ? <>
                 <h2 className='font-semibold text-lg'>Selected Team:</h2>
-                <UsersTable teamMembers={usersList} />
+                <UsersTable onDelete={removeTeamMember} teamMembers={usersList} />
                 <div className="">
                     <Button className='w-[150px] bg-primary' onClick={() => {
                         next(usersList)
