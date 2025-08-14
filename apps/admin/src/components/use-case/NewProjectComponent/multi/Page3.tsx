@@ -41,16 +41,18 @@ const Page3: FC<IProps> = ({ next, back, defaultSelectedUsers }) => {
                 </div>
             </> : null}
             <ModelComponentWithExternalControl title="Add Team Member to Project" open={openUserModel} onOpenChange={change => setOpenUserModel(change)}>
-                <AddTeamMemberModel alreadyExistsError={alreadyExistsError} getUser={(selectedUser) => {
-                    const temp = [...usersList];
-                    const isFound = temp.find(eachUser => eachUser.id === selectedUser.id);
-                    if (isFound) {
-                        return setAlreadyExistsError(true);
-                    }
-                    temp.push(selectedUser);
-                    setUsersList(temp);
-                    setOpenUserModel(false);
-                }} />
+                <AddTeamMemberModel
+                    alreadyExistsError={alreadyExistsError}
+                    getUser={(selectedUser) => {
+                        const temp = [...usersList];
+                        const isFound = temp.find(eachUser => eachUser.id === selectedUser.id);
+                        if (isFound) {
+                            return setAlreadyExistsError(true);
+                        }
+                        temp.push(selectedUser);
+                        setUsersList(temp);
+                        setOpenUserModel(false);
+                    }} />
             </ModelComponentWithExternalControl>
         </section >
     )

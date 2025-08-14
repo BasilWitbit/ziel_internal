@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabaseClient';
 import type { ResponseData } from './mutations';
 import axios from 'axios';
 import { SUPABASE_API_KEY, SUPABASE_EDGE_BASE_URL } from '@/utils/constants';
+import type { TeamMember } from '@/pages/NewProject';
 
 // User type definition based on Supabase Users table
 export type User = {
@@ -17,6 +18,75 @@ export type User = {
     updated_at?: string;
     [key: string]: any; // For additional properties
 };
+
+export type TeamMemberWithName = TeamMember & { name: string };
+export const getProjectTeamMembers = async (
+    projectId: string
+): Promise<ResponseData<TeamMemberWithName[]>> => {
+    try {
+        const { data, error } = await supabase
+            .from("TeamMember__User_Project")
+            .select(`
+        user:Users (
+          firstName,
+          lastName,
+          id
+        ),
+        role,
+        startTime,
+        endTime,
+        overlappingHoursRequired,
+        requiresReporting
+      `)
+            .eq("projectId", projectId);
+
+        if (error) {
+            return {
+                error: true,
+                message: error.message,
+                data: [],
+            };
+        }
+
+        const teamMembers: TeamMemberWithName[] = (data ?? []).map((row: any) => {
+            const fullName = `${row.user?.firstName ?? ''} ${row.user?.lastName ?? ''}`.trim();
+
+            return {
+                id: row.user?.id ?? '',
+                name: fullName,
+                role: row.role ?? '',
+                startTime: row.startTime ?? '',
+                endTime: row.endTime ?? '',
+                overlappingHoursRequired: row.overlappingHoursRequired ?? 0,
+                requiresReporting: !!row.requiresReporting,
+            };
+        });
+        if (teamMembers.length === 0) {
+            return {
+                error: false,
+                message: "No team members found for this project.",
+                data: [],
+            };
+        }
+
+        return {
+            error: false,
+            message: "Team members fetched successfully",
+            data: teamMembers,
+        };
+    } catch (err) {
+        console.error("Error fetching team members:", err);
+        return {
+            error: true,
+            message:
+                err instanceof Error
+                    ? err.message
+                    : "An error occurred while fetching team members.",
+            data: [],
+        };
+    }
+};
+
 
 export const getProjectById = async (
     projectId: string
@@ -141,7 +211,7 @@ export const checkProjectNameExists = async (projectName: string): Promise<Respo
         }
 
         // Check for exact match (case-insensitive)
-        const exactMatch = data?.some(project => 
+        const exactMatch = data?.some(project =>
             project.name.toLowerCase().trim() === trimmedName.toLowerCase()
         );
 

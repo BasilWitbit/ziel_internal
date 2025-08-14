@@ -15,7 +15,8 @@ export type TeamMember = {
     startTime: string,
     endTime: string,
     overlappingHoursRequired?: number,
-    requiresReporting: boolean
+    requiresReporting: boolean,
+
 };
 
 export type ProjectData = {
