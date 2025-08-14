@@ -1,6 +1,7 @@
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
 import useLogin from "../hooks/useLogin"
+import zielLogo from "@/assets/Logo.png";
 
 const LoginComponent = () => {
     const {
@@ -12,7 +13,13 @@ const LoginComponent = () => {
     } = useLogin();
 
     return (
-        <div className="min-h-screen bg-background flex justify-center items-center">
+        <div className="min-h-screen bg-background flex flex-col justify-center items-center">
+            <img
+                src={zielLogo}
+                alt="Ziel Logo"
+                className="w-56 mb-8"
+                style={{ maxWidth: 300  }}
+            />
             <form onSubmit={handleSubmit} className="bg-card border border-gray-200 rounded-lg p-4 w-1/2 min-w-[350px] flex flex-col gap-4 max-w-125">
                 <h1 className="text-2xl">Ziel Global Ltd Internal Portal | User</h1>
                 <h2 className="text-xl">Login</h2>

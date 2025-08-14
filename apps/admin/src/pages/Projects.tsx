@@ -160,7 +160,7 @@ const Projects = () => {
                 <div className="flex justify-center">
                     <TooltipComponent title="Edit Project" >
                         <Button
-                            variant="ghost"
+                            variant="secondary"
                             size="icon"
                             className="text-gray-500 hover:text-blue-600"
                             title="Edit project"
@@ -176,9 +176,22 @@ const Projects = () => {
 
     const renderTeamMembers = (project: Project) => (
         <div className="space-y-3">
-            <h4 className="text-lg font-semibold text-gray-800 border-b border-border pb-2">
-                Team Members ({project.teamMembers.length})
-            </h4>
+            <div className="flex gap-3 items-center">
+                <TooltipComponent title="Manage Team Members" >
+                    <Button
+                        variant="secondary"
+                        size="icon"
+                        className="text-gray-500 hover:text-blue-600"
+                        onClick={() => navigate(`/project/${project.id}/team/edit`)}
+                    >
+                        <Pencil className="w-4 h-4" />
+                    </Button>
+                </TooltipComponent>
+                <h4 className="text-lg font-semibold text-gray-800 ">
+                    Team Members ({project.teamMembers.length})
+                </h4>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {project.teamMembers.map((member) => (
                     <div
@@ -190,12 +203,11 @@ const Projects = () => {
                             onClick={() => handleViewLogs(member, project)}
                             className="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-all duration-200"
                             title={`View logs for ${member.name}`}
-                            variant="ghost"
+                            variant="secondary"
                             size="icon"
                         >
                             <FileText className="w-4 h-4" />
                         </Button>
-
                         {/* Card content with padding to avoid overlap */}
                         <div className="pr-8 space-y-1">
                             <div className="font-semibold text-gray-900">{member.name}</div>
