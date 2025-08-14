@@ -29,17 +29,22 @@ const MultiStepControllerLogs: FC<IProps> = ({ logs, afterSubmission }) => {
 
     const handleBack = () => {
         if (step > 0) {
-            // Remove the last entry from data when going back
-            const temp = [...data];
-            temp.pop();
-            setData(temp);
+            // // Remove the last entry from data when going back
+            // const temp = [...data];
+            // temp.pop();
+            // setData(temp);
             setStep(prevState => prevState - 1);
         }
     };
 
     const handleNext = (payload: LogsPayload) => {
         const temp = [...data];
-        temp.push(payload);
+        if (step < data.length) {
+            temp[step] = payload;
+        }
+        else {
+            temp.push(payload);
+        }
         setData(temp);
         setStep(prevState => prevState + 1);
     };
@@ -65,6 +70,7 @@ const MultiStepControllerLogs: FC<IProps> = ({ logs, afterSubmission }) => {
             )}
             {step !== logs.length ? <>
                 <SingleDayForm
+                    key={`${currentLog.projectId}-${currentLog.date}`}
                     next={handleNext}
                     date={currentLog.date}
                     projectId={currentLog.projectId}
@@ -86,17 +92,18 @@ const MultiStepControllerLogs: FC<IProps> = ({ logs, afterSubmission }) => {
                         Back to Edit
                     </Button>
                     <Button loading={loading} onClick={() => {
-                        setLoading(true)
-                        const payload = groupByProjectNameWithDates(data);
-                        addDayEndLogsOfUser(payload).then((res) => {
-                            if (res.error) {
-                                return toast.error("Something went wrong, contact admin")
-                            }
-                            toast.success('Successfully Added Day End Logs!');
-                            afterSubmission()
-                        }).catch(err => {
-                            toast.error(err.message ?? "Something went wrong")
-                        }).finally(() => setLoading(false));
+                        // setLoading(true)
+                        // const payload = ;
+                        // addDayEndLogsOfUser(payload).then((res) => {
+                        //     if (res.error) {
+                        //         return toast.error("Something went wrong, contact admin")
+                        //     }
+                        //     toast.success('Successfully Added Day End Logs!');
+                        //     afterSubmission()
+                        // }).catch(err => {
+                        //     toast.error(err.message ?? "Something went wrong")
+                        // }).finally(() => setLoading(false));
+                        console.log(groupByProjectNameWithDates(data))
                     }}>Submit All Logs</Button>
                 </div>
             </div>}

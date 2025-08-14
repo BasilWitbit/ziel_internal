@@ -25,7 +25,9 @@ const DayEndLogsComponent: FC<IProps> = ({ missingLogs, afterSubmission }) => {
         }))]
     }
     return (
-        <><MultiStepControllerLogs afterSubmission={afterSubmission} logs={logs} /></>
+        <>
+            <MultiStepControllerLogs afterSubmission={afterSubmission} logs={logs} />
+        </>
     )
 }
 

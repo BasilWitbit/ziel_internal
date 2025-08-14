@@ -55,6 +55,7 @@ type IProps = {
 
 const SingleDayForm: FC<IProps> = ({ projectName, date, next, projectId, initialLogs = [], onCancel }) => {
     const [dayEndValues, setDayEndValues] = useState<DayEndLogEntry>(INITIAL_DAY_END_STATE);
+    console.log({ initialLogs })
     const [logs, setLogs] = useState<DayEndLogEntry[]>(initialLogs)
     const [showError, setShowError] = useState(false)
     const [errorMessage, setErrorMessage] = useState('')
