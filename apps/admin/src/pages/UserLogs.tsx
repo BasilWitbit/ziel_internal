@@ -99,6 +99,7 @@ const UserTimelogScreen = () => {
             id,
             created_at,
             createdByUserId,
+            logDate,
             projectId
           `)
           .eq('createdByUserId', userData.id)
@@ -148,7 +149,7 @@ const UserTimelogScreen = () => {
         // Create a map of logs by date with their entries
         const logsByDate = new Map();
         (dayEndLogs || []).forEach((log: any) => {
-          const logDate = new Date(log.created_at).toISOString().split('T')[0];
+          const logDate = new Date(log.logDate).toISOString().split('T')[0];
           if (!logsByDate.has(logDate)) {
             logsByDate.set(logDate, []);
           }
@@ -160,6 +161,8 @@ const UserTimelogScreen = () => {
             entries: logEntries
           });
         });
+
+        console.log({ logsByDate, userDates, userCreationDate })
 
         // Create timelog data for each day
         const timelogData: TimelogData[] = userDates.map((dateStr: string) => {
@@ -179,28 +182,29 @@ const UserTimelogScreen = () => {
             (log.entries || []).forEach((entry: any) => {
               tasks.push({
                 time: entry.timeTakenInHours || 0,
-                type: entry.type || 'Task', // Use actual type from database
+                type: entry.type || 'Task',
                 task_description: entry.task_description || 'No description',
                 featureTitle: entry.featureTitle || 'No Feature Title'
               });
             });
           });
 
-          // Determine status based on whether there are actual task entries
-          // Even if DayEndLog exists, if there are no entries, it should be Pending
           const status = tasks.length > 0 ? 'Completed' : 'Pending';
 
-          // Use the created_at of the first log for this date, or fallback to dateStr
-          let createdAt = dateStr;
-          if (dayLogs.length > 0 && dayLogs[0].created_at) {
-            createdAt = new Date(dayLogs[0].created_at).toISOString().split('T')[0];
+          // Use the earliest created_at among logs for that *logDate* (there's usually 1)
+          let createdAt = '';
+          if (dayLogs.length > 0) {
+            const earliest = new Date(
+              Math.min(...dayLogs.map((l: any) => new Date(l.created_at).getTime()))
+            );
+            createdAt = earliest.toISOString().split('T')[0];
           }
 
           return {
-            date: formattedDate,
-            status: status,
+            date: formattedDate,      // display 13/14/15 as the row date
+            status,
             tasks,
-            createdAt: status === "Completed" ? createdAt : ""
+            createdAt: status === 'Completed' ? createdAt : ''
           };
         });
         setData(timelogData);
