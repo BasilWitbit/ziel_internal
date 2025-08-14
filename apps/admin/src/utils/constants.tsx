@@ -7,8 +7,10 @@ import SingleTimelog from "@/pages/SingleTimelog"
 // import Timelogs from "@/pages/Timelogs"
 import Users from "@/pages/Users"
 import UserLogs from "@/pages/UserLogs"
-import { User, UserPlus, Clock, Workflow, LayoutDashboard, PackageCheck } from "lucide-react"
+import { User, UserPlus, Clock, Workflow, LayoutDashboard, PackageCheck, PackageOpen, UsersIcon } from "lucide-react"
 import type React from "react"
+import EditProject from "@/pages/EditProject"
+import EditTeamMembers from "@/pages/EditTeamMembers"
 
 export const SUPABASE_PROJECT_URL = env.VITE_SUPABASE_PROJECT_URL as string
 export const SUPABASE_DB_PASS = env.VITE_SUPABASE_DB_PASSWORD as string
@@ -87,5 +89,20 @@ export const PAGES: Page[] = [
         icon: <PackageCheck />,
         inNav: true
     },
-
+    {
+        name: 'edit-project',
+        heading: 'Edit Project',
+        path: "/project/:id/edit",
+        element: <EditProject />,
+        icon: <PackageOpen />,
+        inNav: false
+    },
+    {
+        name: 'edit-team-members',
+        heading: 'Edit Team Members',
+        path: "/project/:id/team/edit",
+        element: <EditTeamMembers />,
+        icon: <UsersIcon />, // or something more appropriate like <Workflow /> or <Users />
+        inNav: false
+    }
 ]

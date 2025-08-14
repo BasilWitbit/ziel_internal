@@ -4,9 +4,11 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import type { TeamMember } from '@/pages/NewProject'
-import { useUserStore } from '@/store/userStore'
+import { getUsers, type TeamMemberWithName, type User } from '@/services/queries'
+import { capitalizeWords } from '@/utils/helpers'
 import { Label } from '@radix-ui/react-label'
-import React, { useState, type FC } from 'react'
+import React, { useEffect, useState, type FC } from 'react'
+import { toast } from 'sonner'
 
 
 const INITIAL_USER_ENTRY_STATE = {
@@ -19,18 +21,38 @@ const INITIAL_USER_ENTRY_STATE = {
 }
 
 type IProps = {
-    getUser: (member: TeamMember) => void;
+    getUser: (member: TeamMemberWithName) => void;
     alreadyExistsError: boolean
 }
 
 const AddTeamMemberModel: FC<IProps> = ({ getUser, alreadyExistsError }) => {
-    const { users } = useUserStore();
+    const [users, setUsers] = useState<User[]>([]);
     const [userEntry, setUserEntry] = useState<TeamMember>(INITIAL_USER_ENTRY_STATE);
     const isInvalid = !userEntry.id || !userEntry.role || !userEntry.startTime || !userEntry.endTime || userEntry.overlappingHoursRequired === null
+
+    useEffect(() => {
+        getUsers().then(res => {
+            if (res.error) {
+                return toast.error(res.message || 'Failed to load users');
+            }
+
+            setUsers(res.data || []);
+        }).catch(err => {
+            toast.error(err.message || 'Failed to load users');
+        }).finally()
+    }, [])
     return (
         <form onSubmit={(event: React.FormEvent<HTMLFormElement>) => {
             event.preventDefault();
-            getUser(userEntry);
+            const foundUser = users.find(eachUser => `${eachUser.id}` === `${userEntry.id}`);
+
+            if (!foundUser) {
+                return toast.error('Something went wrong, contact admin');
+            }
+            getUser({
+                ...userEntry,
+                name: capitalizeWords(`${foundUser.firstName} ${foundUser.lastName}`.trim() || '—')
+            });
         }} className='flex flex-col gap-2'>
             <div className="flex gap-2 flex-wrap items-end">
                 <div className="flex w-full flex-col gap-2">
@@ -45,7 +67,12 @@ const AddTeamMemberModel: FC<IProps> = ({ getUser, alreadyExistsError }) => {
                         }}
                         // className='max-w-full'
                         defaultLabel='Search for Users'
-                        options={[...users.map(eachUser => ({ value: `${eachUser.id}`, label: eachUser.name }))]}
+                        options={[...users.map(eachUser => {
+                            return {
+                                value: eachUser.id,
+                                label: capitalizeWords(`${eachUser.firstName} ${eachUser.lastName}`.trim() || '—')
+                            }
+                        })]}
 
                     />
                 </div>

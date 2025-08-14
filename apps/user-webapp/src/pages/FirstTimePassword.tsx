@@ -18,8 +18,6 @@ const FirstTimePassword = () => {
     // Optional: If you need token for API calls (Not required for supabase.auth.updateUser)
     useEffect(() => {
         const fetchSession = async () => {
-            const { data } = await supabase.auth.getSession();
-            console.log('Session Access Token:', data.session?.access_token);
         };
         fetchSession();
     }, []);
@@ -143,8 +141,8 @@ const FirstTimePassword = () => {
                         {err}
                     </p>
                 ))}
-                <Button disabled={disableBtn} type="submit">
-                    {loading ? 'Submitting...' : 'Create Password'}
+                <Button disabled={disableBtn} loading={loading} type="submit">
+                    Create Password
                 </Button>
             </form>
         </div>

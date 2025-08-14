@@ -10,6 +10,51 @@ export type ResponseData<T> = {
     data?: T;
 }
 
+type ChangesPayload = {
+    name?: string;
+    description?: string;
+    clientUserId?: string;
+}
+
+export const updateProjectDetails = async (projectId: string,
+    changes: ChangesPayload
+): Promise<ResponseData<null>> => {
+    try {
+        const payload: ChangesPayload = {};
+        if (changes.name) {
+            payload.name = changes.name;
+        }
+        if (changes.description) {
+            payload.description = changes.description;
+        }
+        if (changes.clientUserId) {
+            payload.clientUserId = changes.clientUserId;
+        }
+
+        const { error } = await supabase
+            .from('Project')
+            .update(payload)
+            .eq('id', projectId);
+
+        if (error) {
+            throw new Error(error.message || 'Failed to update project details');
+        }
+
+        return {
+            error: false,
+            message: 'Project Details updated successfully',
+            data: null
+        };
+
+    } catch (err) {
+        console.error('Error updating user status:', err);
+        return {
+            error: true,
+            message: (err instanceof Error ? err.message : 'An error occurred while updating user status.'),
+            data: null
+        };
+    }
+}
 
 export const markUserAsNotNew = async (): Promise<ResponseData<null>> => {
     try {
@@ -64,6 +109,9 @@ export const addDayEndLogsOfUser = async (logs: GroupedPayload[]): Promise<Respo
                 },
             }
         );
+        if (res.status !== 200) {
+            throw new Error(res.data.message || 'Failed to add day end logs');
+        }
         return {
             error: false,
             message: '',

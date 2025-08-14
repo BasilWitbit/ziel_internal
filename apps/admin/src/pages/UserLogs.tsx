@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router';
 import { supabase } from '@/lib/supabaseClient';
@@ -9,13 +10,15 @@ import { Button } from '@/components/ui/button';
 interface TaskData {
   time: number;
   type: string;
-  title: string;
+  task_description: string;
+  featureTitle: string;
 }
 
 interface TimelogData {
   date: string;
   status: string;
   tasks?: TaskData[];
+  createdAt: string;
 }
 
 interface TeamMember {
@@ -34,7 +37,7 @@ interface NavigationState {
 const UserTimelogScreen = () => {
   const location = useLocation();
   const navigationState = location.state as NavigationState | null;
-  
+
   // Use passed data or fallback to default
   const userData = navigationState?.user || {
     id: '', // Empty ID to prevent invalid UUID error
@@ -55,14 +58,14 @@ const UserTimelogScreen = () => {
     const days = [];
     const today = new Date();
     const createdDate = new Date(userCreatedDate);
-    
+
     // Start from today and go backwards to user creation date
-    let currentDate = new Date(today);
+    const currentDate = new Date(today);
     while (currentDate >= createdDate) {
       days.push(currentDate.toISOString().split('T')[0]); // YYYY-MM-DD format
       currentDate.setDate(currentDate.getDate() - 1);
     }
-    
+
     return days; // Already in reverse chronological order (today first)
   };
 
@@ -95,8 +98,8 @@ const UserTimelogScreen = () => {
           .select(`
             id,
             created_at,
-            createdByMember,
             createdByUserId,
+            logDate,
             projectId
           `)
           .eq('createdByUserId', userData.id)
@@ -117,7 +120,7 @@ const UserTimelogScreen = () => {
         // Fetch entries for all found logs
         const logIds = (dayEndLogs || []).map(log => log.id);
         let dayEndLogEntries: any[] = [];
-        
+
         if (logIds.length > 0) {
           const { data: entries, error: entriesError } = await supabase
             .from('DayEndLogEntry')
@@ -125,11 +128,12 @@ const UserTimelogScreen = () => {
               id,
               created_at,
               task_description,
+              featureTitle,
               timeTakenInHours,
               type,
-              dayEngLogId
+              dayEndLogId
             `)
-            .in('dayEngLogId', logIds);
+            .in('dayEndLogId', logIds);
 
           if (entriesError) {
             console.error('Error fetching log entries:', entriesError);
@@ -141,22 +145,24 @@ const UserTimelogScreen = () => {
         // Generate dates from user creation to today
         const userCreationDate = userDetails?.created_at || new Date().toISOString();
         const userDates = generateUserDates(userCreationDate);
-        
+
         // Create a map of logs by date with their entries
         const logsByDate = new Map();
         (dayEndLogs || []).forEach((log: any) => {
-          const logDate = new Date(log.created_at).toISOString().split('T')[0];
+          const logDate = new Date(log.logDate).toISOString().split('T')[0];
           if (!logsByDate.has(logDate)) {
             logsByDate.set(logDate, []);
           }
-          
+
           // Find entries for this log
-          const logEntries = dayEndLogEntries.filter(entry => entry.dayEngLogId === log.id);
+          const logEntries = dayEndLogEntries.filter(entry => entry.dayEndLogId === log.id);
           logsByDate.get(logDate).push({
             ...log,
             entries: logEntries
           });
         });
+
+        console.log({ logsByDate, userDates, userCreationDate })
 
         // Create timelog data for each day
         const timelogData: TimelogData[] = userDates.map((dateStr: string) => {
@@ -169,30 +175,38 @@ const UserTimelogScreen = () => {
           });
 
           const dayLogs = logsByDate.get(dateStr) || [];
-          
+
           // Extract tasks from all logs for this day
           const tasks: TaskData[] = [];
           dayLogs.forEach((log: any) => {
             (log.entries || []).forEach((entry: any) => {
               tasks.push({
                 time: entry.timeTakenInHours || 0,
-                type: entry.type || 'Task', // Use actual type from database
-                title: entry.task_description || 'No description'
+                type: entry.type || 'Task',
+                task_description: entry.task_description || 'No description',
+                featureTitle: entry.featureTitle || 'No Feature Title'
               });
             });
           });
 
-          // Determine status based on whether there are actual task entries
-          // Even if DayEndLog exists, if there are no entries, it should be Pending
           const status = tasks.length > 0 ? 'Completed' : 'Pending';
 
+          // Use the earliest created_at among logs for that *logDate* (there's usually 1)
+          let createdAt = '';
+          if (dayLogs.length > 0) {
+            const earliest = new Date(
+              Math.min(...dayLogs.map((l: any) => new Date(l.created_at).getTime()))
+            );
+            createdAt = earliest.toISOString().split('T')[0];
+          }
+
           return {
-            date: formattedDate,
-            status: status,
-            tasks
+            date: formattedDate,      // display 13/14/15 as the row date
+            status,
+            tasks,
+            createdAt: status === 'Completed' ? createdAt : ''
           };
         });
-
         setData(timelogData);
         setLoading(false);
       } catch (error) {
@@ -246,8 +260,12 @@ const UserTimelogScreen = () => {
       },
       {
         header: 'Task Title',
-        accessorKey: 'title',
+        accessorKey: 'task_description',
       },
+      {
+        header: 'Feature Title',
+        accessorKey: 'featureTitle',
+      }
     ];
 
     return (
@@ -280,6 +298,10 @@ const UserTimelogScreen = () => {
       accessorKey: 'status',
       cell: ({ row }) => getStatusBadge(row.original.status),
     },
+    {
+      header: 'Created At',
+      accessorKey: 'createdAt'
+    }
   ];
 
   // Filter data based on selected filter
@@ -323,13 +345,13 @@ const UserTimelogScreen = () => {
         <h2 className="text-3xl font-bold text-gray-900 mb-2">{userData.name}</h2>
         <p className="text-gray-600 mb-2">Project Name: {projectName}</p>
         <p className="text-gray-600 mb-4">Role: {userData.role} • Email: {userData.email}</p>
-        
+
         <div className="mb-4">
           <h3 className="font-semibold text-gray-900 mb-2">Summary</h3>
           <p className="text-gray-600">Total Completed Logs: {completedLogs}</p>
           <p className="text-gray-600">Total Pending Logs: {pendingLogs}</p>
         </div>
-        
+
         <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
           📧 Generate Report
         </button>
@@ -337,38 +359,35 @@ const UserTimelogScreen = () => {
 
       {/* Filter Tabs */}
       <div className="mb-6">
-        <div className="flex space-x-1 bg-gray-100 rounded-lg p-1 inline-flex">
+        <div className="flex space-x-1 bg-gray-100 rounded-lg p-1 ">
           <Button
-            className={`px-4 py-2 rounded-md font-medium transition-colors ${
-              filter === 'All Timelogs'
-                ? 'bg-white shadow-sm text-gray-900'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
+            className={`px-4 py-2 rounded-md font-medium transition-colors ${filter === 'All Timelogs'
+              ? 'bg-white shadow-sm text-gray-900'
+              : 'text-gray-600 hover:text-gray-900'
+              }`}
             variant="ghost"
             onClick={() => setFilter('All Timelogs')}
           >
             All Timelogs
           </Button>
           <Button
-            className={`px-4 py-2 rounded-md font-medium transition-colors relative ${
-              filter === 'Pending Timelogs'
-                ? 'bg-white shadow-sm text-gray-900'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
+            className={`px-4 py-2 rounded-md font-medium transition-colors relative ${filter === 'Pending Timelogs'
+              ? 'bg-white shadow-sm text-gray-900'
+              : 'text-gray-600 hover:text-gray-900'
+              }`}
             variant="ghost"
             onClick={() => setFilter('Pending Timelogs')}
           >
             Pending Timelogs
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+            {pendingLogs !== 0 ? <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
               {pendingLogs}
-            </span>
+            </span> : null}
           </Button>
           <Button
-            className={`px-4 py-2 rounded-md font-medium transition-colors ${
-              filter === 'Completed Timelogs'
-                ? 'bg-white shadow-sm text-gray-900'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
+            className={`px-4 py-2 rounded-md font-medium transition-colors ${filter === 'Completed Timelogs'
+              ? 'bg-white shadow-sm text-gray-900'
+              : 'text-gray-600 hover:text-gray-900'
+              }`}
             variant="ghost"
             onClick={() => setFilter('Completed Timelogs')}
           >
@@ -396,8 +415,8 @@ const UserTimelogScreen = () => {
           Dates per Page {itemsPerPage} • {startIndex + 1}-{Math.min(endIndex, totalItems)} of {totalItems}
         </span>
         <div className="flex space-x-2">
-          <Button 
-            className="px-3 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors disabled:opacity-50" 
+          <Button
+            className="px-3 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors disabled:opacity-50"
             variant="outline"
             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
             disabled={currentPage === 1}
@@ -407,8 +426,8 @@ const UserTimelogScreen = () => {
           <span className="px-3 py-1 text-gray-700">
             Page {currentPage} of {totalPages}
           </span>
-          <Button 
-            className="px-3 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors disabled:opacity-50" 
+          <Button
+            className="px-3 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors disabled:opacity-50"
             variant="outline"
             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
             disabled={currentPage === totalPages || totalPages === 0}

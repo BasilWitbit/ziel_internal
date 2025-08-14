@@ -1,10 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import type { ColumnDef } from '@tanstack/react-table'
-import { FileText } from 'lucide-react'
+import { FileText, Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button';
 import { supabase } from "@/lib/supabaseClient"
-import TableComponent from '../components/common/TableComponent/TableComponent' 
+import TableComponent from '../components/common/TableComponent/TableComponent'
+import { TooltipComponent } from '@/components/TooltipComponent';
+import { capitalizeWords } from '@/utils/helpers';
 
 // Types
 interface TeamMember {
@@ -68,21 +71,21 @@ const Projects = () => {
 
             const mappedProjects: Project[] = (data ?? []).map((item: any) => ({
                 id: item.id,
-                projectName: item.name,
-                projectId: item.id,
+                projectName: capitalizeWords(item.name ?? ''),
+                projectId: capitalizeWords(item.id ?? ''),
                 clientName: item.client
-                    ? `${item.client.firstName} ${item.client.lastName}`
+                    ? capitalizeWords(`${item.client.firstName} ${item.client.lastName}`)
                     : '',
                 createdBy: item.creator
-                    ? `${item.creator.firstName} ${item.creator.lastName}`
+                    ? capitalizeWords(`${item.creator.firstName} ${item.creator.lastName}`)
                     : '',
                 createdDate: item.created_at,
                 teamMembers: (item.TeamMember__User_Project ?? []).map((tm: any) => ({
                     id: tm.userId,
                     name: tm.user
-                        ? `${tm.user.firstName} ${tm.user.lastName}`
+                        ? capitalizeWords(`${tm.user.firstName} ${tm.user.lastName}`)
                         : '',
-                    role: tm.role,
+                    role: capitalizeWords(tm.role),
                     email: tm.user?.email || '',
                 })),
             }))
@@ -111,7 +114,7 @@ const Projects = () => {
             header: 'Project Name',
             cell: ({ getValue }) => (
                 <div className="font-medium text-left">
-                    {getValue() as string}
+                    {capitalizeWords(getValue() as string)}
                 </div>
             ),
         },
@@ -119,7 +122,7 @@ const Projects = () => {
             accessorKey: 'projectId',
             header: 'Project ID',
             cell: ({ getValue }) => (
-                <div className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
+                <div className="font-mono w-max mx-auto text-sm bg-gray-100 px-2 py-1 rounded">
                     {getValue() as string}
                 </div>
             ),
@@ -129,7 +132,7 @@ const Projects = () => {
             header: 'Client Name',
             cell: ({ getValue }) => (
                 <div className="text-blue-600 font-medium">
-                    {getValue() as string}
+                    {capitalizeWords(getValue() as string)}
                 </div>
             ),
         },
@@ -149,13 +152,46 @@ const Projects = () => {
                 })
             },
         },
+        {
+            id: 'actions',
+            header: 'Actions',
+            enableSorting: false,
+            cell: ({ row }) => (
+                <div className="flex justify-center">
+                    <TooltipComponent title="Edit Project" >
+                        <Button
+                            variant="secondary"
+                            size="icon"
+                            className="text-gray-500 hover:text-blue-600"
+                            title="Edit project"
+                            onClick={() => navigate(`/project/${row.original.id}/edit`)}
+                        >
+                            <Pencil className="w-4 h-4" />
+                        </Button>
+                    </TooltipComponent>
+                </div>
+            ),
+        },
     ]
 
     const renderTeamMembers = (project: Project) => (
         <div className="space-y-3">
-            <h4 className="text-lg font-semibold text-gray-800 border-b pb-2">
-                Team Members ({project.teamMembers.length})
-            </h4>
+            <div className="flex gap-3 items-center">
+                <TooltipComponent title="Manage Team Members" >
+                    <Button
+                        variant="secondary"
+                        size="icon"
+                        className="text-gray-500 hover:text-blue-600"
+                        onClick={() => navigate(`/project/${project.id}/team/edit`)}
+                    >
+                        <Pencil className="w-4 h-4" />
+                    </Button>
+                </TooltipComponent>
+                <h4 className="text-lg font-semibold text-gray-800 ">
+                    Team Members ({project.teamMembers.length})
+                </h4>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {project.teamMembers.map((member) => (
                     <div
@@ -167,12 +203,11 @@ const Projects = () => {
                             onClick={() => handleViewLogs(member, project)}
                             className="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-all duration-200"
                             title={`View logs for ${member.name}`}
-                            variant="ghost"
+                            variant="secondary"
                             size="icon"
                         >
                             <FileText className="w-4 h-4" />
                         </Button>
-
                         {/* Card content with padding to avoid overlap */}
                         <div className="pr-8 space-y-1">
                             <div className="font-semibold text-gray-900">{member.name}</div>
@@ -186,8 +221,8 @@ const Projects = () => {
     )
 
     return (
-        <div className="p-6 bg-gray-50 min-h-screen">
-            <div className="max-w-7xl mx-auto">
+        <>
+            <div className="">
                 <div className="mb-6">
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">Projects</h1>
                     <p className="text-gray-600">Manage and view all your projects</p>
@@ -205,12 +240,11 @@ const Projects = () => {
                             searchKeys={['projectName', 'projectId', 'clientName', 'createdBy']}
                             expandable={true}
                             renderExpandedRow={renderTeamMembers}
-                            
                         />
                     )}
                 </div>
             </div>
-        </div>
+        </>
     )
 }
 

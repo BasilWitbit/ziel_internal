@@ -39,11 +39,11 @@ type IProps = {
 }
 
 const UsersLayout: FC<IProps> = ({ users, createNewLabel, type }) => {
-    console.log({ users });
     return (
         <div className='w-full'>
             <CardComponent className='flex flex-col gap-4'>
-                <LinkedButtonComponent className='self-start' variant={'outline'} to={`/users/new?admin=${type === 'admins' ? 'true' : 'false'}`}>{createNewLabel || "Create new user"}</LinkedButtonComponent>
+                {type === 'users' ? <LinkedButtonComponent className='self-start' variant={'outline'} to={`/users/new?admin=false`}>{createNewLabel || "Create new user"}</LinkedButtonComponent> : null}
+
                 <TableComponent<User> data={users} columns={cols} />
             </CardComponent>
         </div>

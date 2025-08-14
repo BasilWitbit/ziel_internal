@@ -1,14 +1,14 @@
 import RouterComponent from './RouterComponent'
 import AuthProvider from './components/context/AuthProvider';
-import DayEngLogFormProvider from './components/context/DayEngLogFormProvider';
+import DayEndLogFormProvider from './components/context/DayEndLogFormProvider';
 import './lib/supabaseClient';
 
 const App = () => {
     return (
         <AuthProvider>
-            <DayEngLogFormProvider>
+            <DayEndLogFormProvider>
                 <RouterComponent />
-            </DayEngLogFormProvider>
+            </DayEndLogFormProvider>
         </AuthProvider>
     )
 }

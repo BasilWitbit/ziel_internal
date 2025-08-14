@@ -9,7 +9,6 @@ import { useEffect, useState, type FC } from 'react'
 import NewClientModel from './NewClientModel'
 import { useUserStore } from '@/store/userStore'
 
-
 type IProps = {
     next: ((user: ClientUser) => void),
     back: () => void,
@@ -28,8 +27,6 @@ const Page2: FC<IProps> = ({ next, back, defaultSelectedUserId }) => {
     const [openNewClientModel, setOpenNewClientModel] = useState<boolean>(false);
 
     useEffect(() => {
-        console.log('render')
-        console.log({ defaultSelectedUserId })
         const defaultUser = users.find(eachUser => `${defaultSelectedUserId}` === `${eachUser.id}`)
         if (defaultUser) {
             setSelectedClient(defaultUser)
@@ -50,9 +47,8 @@ const Page2: FC<IProps> = ({ next, back, defaultSelectedUserId }) => {
                                 setOpenNewClientModel(true);
                             },
                             props: {
-                                className: ' my-2'
+                                className: 'my-2'
                             },
-
                         }}
                             className='max-w-[200px]'
                             defaultLabel='Search for Users'
@@ -97,7 +93,6 @@ const Page2: FC<IProps> = ({ next, back, defaultSelectedUserId }) => {
             >
                 <NewClientModel
                     getUserDetails={(user) => {
-                        console.log({ user })
                         setSelectedClient(user)
                         addUser(user);
                         setOpenNewClientModel(false);

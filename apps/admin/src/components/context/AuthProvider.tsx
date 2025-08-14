@@ -33,7 +33,7 @@ const AuthProvider: React.FC<IProps> = ({ children }) => {
     useEffect(() => {
         supabase.auth.getSession().then(({ data }) => {
             if (data.session) {
-                console.log(data.session.access_token)
+
                 setIsAuthenticated(true);
             }
         });

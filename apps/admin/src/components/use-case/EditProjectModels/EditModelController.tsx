@@ -1,0 +1,47 @@
+import type { EditOptions } from '@/pages/EditProject'
+import { type FC } from 'react'
+import EditName from './EditName'
+import EditDesc from './EditDesc'
+import EditClient from './EditClient'
+import type { CommonProps, ComponentProps } from './types'
+
+type IProps = {
+    name: EditOptions,
+    componentProps?: ComponentProps,
+    commonProps?: CommonProps
+}
+
+const Layout: FC<{ children: React.ReactNode }> = ({ children }) => {
+    return <div >
+        {children}
+    </div>
+}
+
+const EditModelController: FC<IProps> = ({ name, componentProps, commonProps }) => {
+    switch (name) {
+        case "name":
+            return <Layout>
+                <EditName
+                    {...commonProps}
+                    {...componentProps?.name}
+                />
+            </Layout>
+        case "client":
+            return <Layout>
+                <EditClient
+                    {...commonProps}
+                    {...componentProps?.client}
+                />
+            </Layout>
+        case "desc":
+            return <Layout>
+                <EditDesc
+                    {...commonProps}
+                    {...componentProps?.desc}
+                />
+            </Layout>
+
+    }
+}
+
+export default EditModelController

@@ -28,14 +28,14 @@ export type ProjectType = {
     projectId: string
 }
 
-const DayEngLogFormProvider: FC<IProps> = ({ children }) => {
+const DayEndLogFormProvider: FC<IProps> = ({ children }) => {
     const { isAuthenticated } = useAuth();
     const [openDayEndLogModel, setOpenDayEndLogModel] = useState(false);
     const [missingLogs, setMissingLogs] = useState<ProjectType[]>([]);
     const { userData } = useAuth();
     useEffect(() => {
         if (isAuthenticated) {
-            if (userData?.userId) {
+            if (userData?.userId && !userData?.isNewUser) {
                 getPendingLogs(userData.userId).then(res => {
                     if (res.error || !res.data) {
                         return toast.error("Failed to fetch Pending Logs")
@@ -76,4 +76,4 @@ const DayEngLogFormProvider: FC<IProps> = ({ children }) => {
     )
 }
 
-export default DayEngLogFormProvider
+export default DayEndLogFormProvider

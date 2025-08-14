@@ -1,4 +1,4 @@
-import type { ProjectType } from "@/components/context/DayEngLogFormProvider"
+import type { ProjectType } from "@/components/context/DayEndLogFormProvider"
 import type { FC } from "react"
 import MultiStepControllerLogs from "./MultiStepControllerLogs"
 

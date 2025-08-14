@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase, supabaseAdmin } from "@/lib/supabaseClient";
-import { buildUserSlug, type User } from "./queries";
+import { buildUserSlug } from "./queries";
 import { NEW_USER_PASS, SUPABASE_EDGE_BASE_URL } from "@/utils/constants";
 import axios from "axios";
-import type { ProjectData } from "@/pages/NewProject";
+import type { ProjectData, TeamMember } from "@/pages/NewProject";
 
 export type ResponseData<T> = {
     error?: boolean;
@@ -11,13 +11,117 @@ export type ResponseData<T> = {
     data?: T;
 }
 
+type ChangesPayload = {
+    name?: string;
+    description?: string;
+    clientId?: string;
+}
+
+
+export const updateProjectTeamMembers = async (
+    projectId: string,
+    teamMembers: TeamMember[]
+): Promise<ResponseData<null>> => {
+    try {
+        // Step 1: Delete all existing team members for this project
+        const { error: deleteError } = await supabase
+            .from("TeamMember__User_Project")
+            .delete()
+            .eq("projectId", projectId);
+
+        if (deleteError) {
+            throw new Error(deleteError.message || "Failed to remove existing team members");
+        }
+
+        // Step 2: Insert updated team member list
+        const insertPayload = teamMembers.map((member) => ({
+            projectId,
+            userId: member.id,
+            role: member.role,
+            startTime: member.startTime,
+            endTime: member.endTime,
+            overlappingHoursRequired: member.overlappingHoursRequired ?? 0,
+            requiresReporting: member.requiresReporting,
+        }));
+
+        const { error: insertError } = await supabase
+            .from("TeamMember__User_Project")
+            .insert(insertPayload);
+
+        if (insertError) {
+            throw new Error(insertError.message || "Failed to add new team members");
+        }
+
+        return {
+            error: false,
+            message: "Team members updated successfully",
+            data: null,
+        };
+    } catch (err) {
+        console.error("Error updating team members:", err);
+        return {
+            error: true,
+            message:
+                err instanceof Error
+                    ? err.message
+                    : "An error occurred while updating team members.",
+            data: null,
+        };
+    }
+};
+
+export const updateProjectDetails = async (projectId: string,
+    changes: {
+        name?: string;
+        description?: string;
+        clientUserId?: string;
+    }
+): Promise<ResponseData<null>> => {
+    try {
+        const payload: ChangesPayload = {};
+        if (changes.name) {
+            payload.name = changes.name;
+        }
+        if (changes.description) {
+            payload.description = changes.description;
+        }
+        if (changes.clientUserId) {
+            payload.clientId = changes.clientUserId;
+        }
+
+        const { error } = await supabase
+            .from('Project')
+            .update(payload)
+            .eq('id', projectId);
+
+        if (error) {
+            throw new Error(error.message || 'Failed to update project details');
+        }
+
+        return {
+            error: false,
+            message: 'Project Details updated successfully',
+            data: null
+        };
+
+    } catch (err) {
+        console.error('Error updating user status:', err);
+        return {
+            error: true,
+            message: (err instanceof Error ? err.message : 'An error occurred while updating user status.'),
+            data: null
+        };
+    }
+}
+
+
 export const createUser = async (userData: {
     firstName: string,
     lastName?: string,
     email: string,
     isAdmin: boolean,
     isClient?: boolean
-}): Promise<ResponseData<User | null>> => {
+}): Promise<ResponseData<any | null>> => {
     try {
         const fullName = `${userData.firstName} ${userData.lastName ?? ''}`.trim();
 
@@ -93,14 +197,57 @@ export const createUser = async (userData: {
 
 export const createProject = async (projectData: ProjectData): Promise<ResponseData<any>> => {
     try {
+        // Trim and validate project name before creating
+        const trimmedProjectName = projectData.projectName.trim();
+        const trimmedProjectDescription = projectData.projectDescription.trim();
+
+        if (!trimmedProjectName) {
+            return {
+                error: true,
+                message: 'Project name is required',
+                data: null
+            };
+        }
+
+        // Check for duplicate project names one more time before creation
+        const { data: existingProjects, error: checkError } = await supabase
+            .from('Project')
+            .select('id, name')
+            .ilike('name', trimmedProjectName);
+
+        if (checkError) {
+            throw new Error(checkError.message);
+        }
+
+        // Check for exact match (case-insensitive)
+        const duplicateExists = existingProjects?.some(project =>
+            project.name.toLowerCase().trim() === trimmedProjectName.toLowerCase()
+        );
+
+        if (duplicateExists) {
+            return {
+                error: true,
+                message: 'A project with this name already exists',
+                data: null
+            };
+        }
+
         const data = await supabase.auth.getSession()
         const accessToken = data.data.session?.access_token
         if (!accessToken) {
             throw new Error("Invalid Token")
         }
+
+        // Create the project with trimmed data
+        const trimmedProjectData = {
+            ...projectData,
+            projectName: trimmedProjectName,
+            projectDescription: trimmedProjectDescription
+        };
+
         const res = await axios.post(
             `${SUPABASE_EDGE_BASE_URL}create-project`,
-            projectData,
+            trimmedProjectData,
             {
                 headers: {
                     'Content-Type': 'application/json',
@@ -108,7 +255,6 @@ export const createProject = async (projectData: ProjectData): Promise<ResponseD
                 },
             }
         );
-        console.log({ res })
         return {
             error: false,
             message: '',
@@ -116,10 +262,10 @@ export const createProject = async (projectData: ProjectData): Promise<ResponseD
         };
 
     } catch (err) {
-        console.error('Error creating user:', err);
+        console.error('Error creating project:', err);
         return {
             error: true,
-            message: (err instanceof Error ? err.message : 'An error occurred while creating the user.'),
+            message: (err instanceof Error ? err.message : 'An error occurred while creating the project.'),
             data: null
         };
     }
