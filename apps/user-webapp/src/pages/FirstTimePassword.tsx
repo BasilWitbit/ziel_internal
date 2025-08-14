@@ -18,7 +18,6 @@ const FirstTimePassword = () => {
     // Optional: If you need token for API calls (Not required for supabase.auth.updateUser)
     useEffect(() => {
         const fetchSession = async () => {
-            const { data } = await supabase.auth.getSession();
         };
         fetchSession();
     }, []);
