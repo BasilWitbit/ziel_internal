@@ -81,12 +81,10 @@ const SingleDayForm: FC<IProps> = ({ projectName, date, next, projectId, initial
                         }} />
                     </div>
                     <div className="w-full min-w-[200px] ">
-                        <Input required label="Task Description*" value={dayEndValues.taskDescription} onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        <Input required max={50} label="Task Description*" value={dayEndValues.taskDescription} onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                             setShowError(false);
                             setErrorMessage('');
-                            if (dayEndValues.taskDescription.length > 50) {
-                                return;
-                            }
+                            
                             setDayEndValues(prevState => ({
                                 ...prevState,
                                 taskDescription: e.target.value
