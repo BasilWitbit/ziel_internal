@@ -1,6 +1,10 @@
 # Bug Reporting
 
-[📄 Issue Reporting Guidelines](./guides/ISSUES.md)
+[📄 Issue Reporting Guidelines](./docs/ISSUES.md)
+
+## Change Logs
+
+[📄 Change Logs](./docs/CHANGE_LOGS.md)
 
 ## Turborepo starter
 
