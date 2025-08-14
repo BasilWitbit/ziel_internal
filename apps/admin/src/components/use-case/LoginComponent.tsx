@@ -2,7 +2,7 @@
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
 import useLogin from "../hooks/useLogin"
-import zielLogo from "@/assets/Ziel Logo new.png";
+import zielLogo from "@/assets/Logo.png";
 
 const LoginComponent = () => {
     const {
