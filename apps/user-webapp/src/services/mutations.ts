@@ -109,6 +109,9 @@ export const addDayEndLogsOfUser = async (logs: GroupedPayload[]): Promise<Respo
                 },
             }
         );
+        if (res.status !== 200) {
+            throw new Error(res.data.message || 'Failed to add day end logs');
+        }
         return {
             error: false,
             message: '',

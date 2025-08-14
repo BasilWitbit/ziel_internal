@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router';
 import { supabase } from '@/lib/supabaseClient';
@@ -9,13 +10,15 @@ import { Button } from '@/components/ui/button';
 interface TaskData {
   time: number;
   type: string;
-  title: string;
+  task_description: string;
+  featureTitle: string;
 }
 
 interface TimelogData {
   date: string;
   status: string;
   tasks?: TaskData[];
+  createdAt: string;
 }
 
 interface TeamMember {
@@ -95,7 +98,6 @@ const UserTimelogScreen = () => {
           .select(`
             id,
             created_at,
-            createdByMember,
             createdByUserId,
             projectId
           `)
@@ -125,6 +127,7 @@ const UserTimelogScreen = () => {
               id,
               created_at,
               task_description,
+              featureTitle,
               timeTakenInHours,
               type,
               dayEndLogId
@@ -177,7 +180,8 @@ const UserTimelogScreen = () => {
               tasks.push({
                 time: entry.timeTakenInHours || 0,
                 type: entry.type || 'Task', // Use actual type from database
-                title: entry.task_description || 'No description'
+                task_description: entry.task_description || 'No description',
+                featureTitle: entry.featureTitle || 'No Feature Title'
               });
             });
           });
@@ -186,13 +190,20 @@ const UserTimelogScreen = () => {
           // Even if DayEndLog exists, if there are no entries, it should be Pending
           const status = tasks.length > 0 ? 'Completed' : 'Pending';
 
+          // Use the created_at of the first log for this date, or fallback to dateStr
+          let createdAt = dateStr;
+          if (dayLogs.length > 0 && dayLogs[0].created_at) {
+            createdAt = new Date(dayLogs[0].created_at).toISOString().split('T')[0];
+          }
+
           return {
             date: formattedDate,
             status: status,
-            tasks
+            tasks,
+            createdAt: status === "Completed" ? createdAt : ""
           };
         });
-
+        console.log({ timelogData })
         setData(timelogData);
         setLoading(false);
       } catch (error) {
@@ -246,8 +257,12 @@ const UserTimelogScreen = () => {
       },
       {
         header: 'Task Title',
-        accessorKey: 'title',
+        accessorKey: 'task_description',
       },
+      {
+        header: 'Feature Title',
+        accessorKey: 'featureTitle',
+      }
     ];
 
     return (
@@ -280,6 +295,10 @@ const UserTimelogScreen = () => {
       accessorKey: 'status',
       cell: ({ row }) => getStatusBadge(row.original.status),
     },
+    {
+      header: 'Created At',
+      accessorKey: 'createdAt'
+    }
   ];
 
   // Filter data based on selected filter
@@ -337,11 +356,11 @@ const UserTimelogScreen = () => {
 
       {/* Filter Tabs */}
       <div className="mb-6">
-        <div className="flex space-x-1 bg-gray-100 rounded-lg p-1 inline-flex">
+        <div className="flex space-x-1 bg-gray-100 rounded-lg p-1 ">
           <Button
             className={`px-4 py-2 rounded-md font-medium transition-colors ${filter === 'All Timelogs'
-                ? 'bg-white shadow-sm text-gray-900'
-                : 'text-gray-600 hover:text-gray-900'
+              ? 'bg-white shadow-sm text-gray-900'
+              : 'text-gray-600 hover:text-gray-900'
               }`}
             variant="ghost"
             onClick={() => setFilter('All Timelogs')}
@@ -350,21 +369,21 @@ const UserTimelogScreen = () => {
           </Button>
           <Button
             className={`px-4 py-2 rounded-md font-medium transition-colors relative ${filter === 'Pending Timelogs'
-                ? 'bg-white shadow-sm text-gray-900'
-                : 'text-gray-600 hover:text-gray-900'
+              ? 'bg-white shadow-sm text-gray-900'
+              : 'text-gray-600 hover:text-gray-900'
               }`}
             variant="ghost"
             onClick={() => setFilter('Pending Timelogs')}
           >
             Pending Timelogs
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+            {pendingLogs !== 0 ? <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
               {pendingLogs}
-            </span>
+            </span> : null}
           </Button>
           <Button
             className={`px-4 py-2 rounded-md font-medium transition-colors ${filter === 'Completed Timelogs'
-                ? 'bg-white shadow-sm text-gray-900'
-                : 'text-gray-600 hover:text-gray-900'
+              ? 'bg-white shadow-sm text-gray-900'
+              : 'text-gray-600 hover:text-gray-900'
               }`}
             variant="ghost"
             onClick={() => setFilter('Completed Timelogs')}

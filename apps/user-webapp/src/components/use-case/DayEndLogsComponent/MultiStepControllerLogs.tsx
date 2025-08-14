@@ -25,7 +25,6 @@ const MultiStepControllerLogs: FC<IProps> = ({ logs, afterSubmission }) => {
     const [step, setStep] = useState(0);
     const [data, setData] = useState<LogsPayload[]>([]);
     const [loading, setLoading] = useState(false);
-    console.log({ payload: groupByProjectNameWithDates(data) })
     const currentLog = logs[step];
 
     const handleBack = () => {
@@ -51,8 +50,8 @@ const MultiStepControllerLogs: FC<IProps> = ({ logs, afterSubmission }) => {
             {step !== logs.length && (
                 <>
                     {step > 0 && (
-                        <Button 
-                            variant="secondary" 
+                        <Button
+                            variant="secondary"
                             size="sm"
                             onClick={handleBack}
                             className="self-start"
@@ -65,7 +64,7 @@ const MultiStepControllerLogs: FC<IProps> = ({ logs, afterSubmission }) => {
                 </>
             )}
             {step !== logs.length ? <>
-                <SingleDayForm 
+                <SingleDayForm
                     next={handleNext}
                     date={currentLog.date}
                     projectId={currentLog.projectId}
@@ -79,8 +78,8 @@ const MultiStepControllerLogs: FC<IProps> = ({ logs, afterSubmission }) => {
                     <p className="text-sm text-gray-600">You have completed {logs.length} logs. Click submit to save all entries or go back to make changes.</p>
                 </div>
                 <div className="flex gap-2">
-                    <Button 
-                        variant="outline" 
+                    <Button
+                        variant="outline"
                         onClick={handleBack}
                         disabled={loading}
                     >
