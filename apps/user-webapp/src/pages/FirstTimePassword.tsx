@@ -19,7 +19,6 @@ const FirstTimePassword = () => {
     useEffect(() => {
         const fetchSession = async () => {
             const { data } = await supabase.auth.getSession();
-            console.log('Session Access Token:', data.session?.access_token);
         };
         fetchSession();
     }, []);

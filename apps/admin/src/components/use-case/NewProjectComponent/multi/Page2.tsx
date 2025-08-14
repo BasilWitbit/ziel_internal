@@ -27,7 +27,6 @@ const Page2: FC<IProps> = ({ next, back, defaultSelectedUserId }) => {
     const [openNewClientModel, setOpenNewClientModel] = useState<boolean>(false);
 
     useEffect(() => {
-        console.log({ defaultSelectedUserId })
         const defaultUser = users.find(eachUser => `${defaultSelectedUserId}` === `${eachUser.id}`)
         if (defaultUser) {
             setSelectedClient(defaultUser)
@@ -94,7 +93,6 @@ const Page2: FC<IProps> = ({ next, back, defaultSelectedUserId }) => {
             >
                 <NewClientModel
                     getUserDetails={(user) => {
-                        console.log({ user })
                         setSelectedClient(user)
                         addUser(user);
                         setOpenNewClientModel(false);

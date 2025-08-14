@@ -48,7 +48,6 @@ const EditTeamMembers = () => {
     }, [projectId]);
 
     const addTeamMember = (member: TeamMemberWithName) => {
-        console.log({ member })
         setChanged(true);
         const exists = teamMembers.find((tm) => tm.id === member.id);
         if (exists) return setAlreadyExistsError(true);
@@ -77,7 +76,6 @@ const EditTeamMembers = () => {
     if (loading) {
         return <Card><CardHeader><Skeleton className="h-7 w-64" /></CardHeader><CardContent className="space-y-6"><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /></CardContent></Card>;
     }
-    console.log({ teamMembers })
     return (
         <div>
             <Card>

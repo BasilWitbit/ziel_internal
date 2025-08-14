@@ -29,7 +29,6 @@ const NewProjectComponent: FC<IProps> = ({ next }) => {
         e.preventDefault();
         const result = await validateForm();
         if (result?.valid) {
-            console.log("✅ Form Data:", { formData });
             next('123')
         } else {
             console.warn("❌ Validation Errors:", result?.errors);

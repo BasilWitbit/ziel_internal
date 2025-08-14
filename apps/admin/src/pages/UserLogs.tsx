@@ -203,7 +203,6 @@ const UserTimelogScreen = () => {
             createdAt: status === "Completed" ? createdAt : ""
           };
         });
-        console.log({ timelogData })
         setData(timelogData);
         setLoading(false);
       } catch (error) {

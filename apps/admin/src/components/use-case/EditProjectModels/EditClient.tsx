@@ -101,7 +101,6 @@ const EditClient: React.FC<IProps> = ({ defaultClient, getValue }) => {
         >
             <NewClientModel
                 getUserDetails={(user) => {
-                    console.log({ user });
                     const newUser = {
                         email: user.email ?? "",
                         firstName: user.name.split(' ')[0] ?? "",

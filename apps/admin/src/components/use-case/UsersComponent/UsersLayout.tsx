@@ -39,7 +39,6 @@ type IProps = {
 }
 
 const UsersLayout: FC<IProps> = ({ users, createNewLabel, type }) => {
-    console.log({ users });
     return (
         <div className='w-full'>
             <CardComponent className='flex flex-col gap-4'>

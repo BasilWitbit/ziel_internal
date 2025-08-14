@@ -255,7 +255,6 @@ export const createProject = async (projectData: ProjectData): Promise<ResponseD
                 },
             }
         );
-        console.log({ res })
         return {
             error: false,
             message: '',

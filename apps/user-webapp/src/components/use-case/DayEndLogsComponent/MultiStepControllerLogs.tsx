@@ -92,7 +92,6 @@ const MultiStepControllerLogs: FC<IProps> = ({ logs, afterSubmission }) => {
                             if (res.error) {
                                 return toast.error("Something went wrong, contact admin")
                             }
-                            console.log(res.data);
                             toast.success('Successfully Added Day End Logs!');
                             afterSubmission()
                         }).catch(err => {

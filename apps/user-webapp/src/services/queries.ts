@@ -81,7 +81,6 @@ export const getPendingLogs = async (userId: string): Promise<ResponseData<any[]
                 },
             }
         );
-        console.log(res.data)
         return {
             error: false,
             message: 'User slug built successfully',

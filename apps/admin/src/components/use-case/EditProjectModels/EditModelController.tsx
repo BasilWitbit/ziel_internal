@@ -18,7 +18,6 @@ const Layout: FC<{ children: React.ReactNode }> = ({ children }) => {
 }
 
 const EditModelController: FC<IProps> = ({ name, componentProps, commonProps }) => {
-    console.log({ test: componentProps?.name })
     switch (name) {
         case "name":
             return <Layout>
