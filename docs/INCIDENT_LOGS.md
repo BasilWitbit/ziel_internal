@@ -111,13 +111,11 @@ In supabase the timetaken for a task had type int but the user was trying to put
 
 #### Resolution
 
-- Made the timetaken type float so that it accepts decimal values aswell (commit: `abc123`).  
-- Deployed patch at 15:00 PKT.  
+- Made the timetaken type float so that it accepts decimal values aswell.   
 
 #### Impact
 
 - 4 failed submission attempts between 18:30–19:00.  
-- Minimal revenue impact; users retried successfully after fix.  
 
 #### Preventive Measures
 
