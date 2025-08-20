@@ -1,3 +1,7 @@
+## Incident Logs
+
+See [docs/INCIDENT_LOGS.md](./docs/INCIDENT_LOGS.md) for a record of production issues and resolutions.
+
 # Bug Reporting
 
 [📄 Issue Reporting Guidelines](./docs/ISSUES.md)
@@ -142,10 +146,3 @@ Learn more about the power of Turborepo:
 - [Configuration Options](https://turborepo.com/docs/reference/configuration)
 - [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
 
-## Change Logs
-
-[📄 Change Logs](./docs/CHANGE_LOGS.md)
-
-## Incident Logs
-
-See [docs/INCIDENT_LOGS.md](./docs/INCIDENT_LOGS.md) for a record of production issues and resolutions.
