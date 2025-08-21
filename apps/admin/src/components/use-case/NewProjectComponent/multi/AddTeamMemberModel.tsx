@@ -16,7 +16,7 @@ const INITIAL_USER_ENTRY_STATE = {
     role: '',
     startTime: '',
     endTime: '',
-    overlappingHoursRequired: 0,
+    // overlappingHoursRequired: 0, // Overlapping hours removed as per requirements
     requiresReporting: true
 }
 
@@ -28,7 +28,7 @@ type IProps = {
 const AddTeamMemberModel: FC<IProps> = ({ getUser, alreadyExistsError }) => {
     const [users, setUsers] = useState<User[]>([]);
     const [userEntry, setUserEntry] = useState<TeamMember>(INITIAL_USER_ENTRY_STATE);
-    const isInvalid = !userEntry.id || !userEntry.role || !userEntry.startTime || !userEntry.endTime || userEntry.overlappingHoursRequired === null
+    const isInvalid = !userEntry.id || !userEntry.role || !userEntry.startTime || !userEntry.endTime // || userEntry.overlappingHoursRequired === null
 
     useEffect(() => {
         getUsers().then(res => {
@@ -110,7 +110,9 @@ const AddTeamMemberModel: FC<IProps> = ({ getUser, alreadyExistsError }) => {
                     }} />
                 </div>
             </div>
+           
             <div className="flex gap-2 flex-wrap items-end">
+                {/*
                 <div className="flex w-full flex-col gap-2">
                     <Input label="Overlapping Hours Required"
                         type="number"
@@ -124,6 +126,7 @@ const AddTeamMemberModel: FC<IProps> = ({ getUser, alreadyExistsError }) => {
                         }}
                     />
                 </div>
+                */}
                 <div className="flex items-center gap-2">
                     <Checkbox id='requiresReporting'
                         checked={userEntry.requiresReporting}
