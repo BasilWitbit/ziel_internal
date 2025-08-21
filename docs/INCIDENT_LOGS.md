@@ -8,7 +8,7 @@
 - [Format Standard](#format-standard)
 - [Example Incident](#example-incident)
 - [Incidents](#incidents)
-  - [2025-08-19 – Checkout Failure](#2025-08-19--checkout-failure)
+  - [2025-08-18 – Logs Sumission Failure](#2025-08-19--Logs-submission-failure)
   - [Add new incidents here]
 
 ---
@@ -92,32 +92,31 @@ Connection pool in the auth service exhausted due to missing cleanup of idle ses
 
 ## Incidents
 
-### 2025-08-19 – Checkout Failure
+### 2025-08-18 – Logs Submission Failure
 
-**Date:** 2025-08-19  
-**Time:** 14:30 PKT  
-**Reported by:** Sarah (QA)  
-**Affected users:** Customers attempting to complete payment  
+**Date:** 2025-08-18  
+**Time:** 18:30 PKT  
+**Reported by:** Husnain Shakir  
+**Affected users:** User attempting to submit logs at the day end.  
 
 #### Issue
 
-Users were unable to complete checkout. The "Confirm Order" button froze after payment.
+A certain user was unable to submit their logs , after clicking the submit logs button an error poped up saying "something went wrong"
+
+https://github.com/BasilWitbit/ziel_internal/issues/43
 
 #### Root Cause
 
-Race condition in payment callback handler — database transaction lock missing.
+In supabase the timetaken for a task had type int but the user was trying to put in time taken in decimals which required it to be float.
 
 #### Resolution
 
-- Applied hotfix to add transaction-level locking (commit: `abc123`).  
-- Deployed patch at 15:00 PKT.  
+- Made the timetaken type float so that it accepts decimal values aswell.   
 
 #### Impact
 
-- 10 failed checkout attempts between 14:00–14:45.  
-- Minimal revenue impact; users retried successfully after fix.  
+- 4 failed submission attempts between 18:30–19:00.  
 
 #### Preventive Measures
 
-- Added integration tests for concurrent payment callbacks.  
-- Scheduled audit of payment flow by backend team.
+- Added try...catch handling in the Edge Function to capture and log errors gracefully, instead of generic “something went wrong” messages.
