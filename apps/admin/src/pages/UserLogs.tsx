@@ -38,15 +38,60 @@ const UserTimelogScreen = () => {
   const location = useLocation();
   const navigationState = location.state as NavigationState | null;
 
-  // Use passed data or fallback to default
-  const userData = navigationState?.user || {
-    id: '', // Empty ID to prevent invalid UUID error
-    name: 'John Doe',
-    role: 'Developer',
-    email: 'john.doe@example.com'
+  const getUserData = () => {
+    // If coming from navigation state, save to localStorage and return
+    if (navigationState?.user) {
+      const userData = navigationState.user;
+      localStorage.setItem('userLogs_userData', JSON.stringify(userData));
+      return userData;
+    }
+    // Otherwise, try to get from localStorage
+    try {
+      const savedUserData = localStorage.getItem('userLogs_userData');
+      if (savedUserData) {
+        return JSON.parse(savedUserData);
+      }
+    } catch (e) {
+      console.error('Error reading from localStorage:', e);
+    }
+    return null;
   };
-  const projectName = navigationState?.projectName || 'Default Project';
-  const projectId = navigationState?.projectId || '';
+  const getProjectData = () => {
+    // If coming from navigation state, save to localStorage and return
+    if (navigationState?.projectName && navigationState?.projectId) {
+      const projectData = {
+        projectId: navigationState.projectId,
+        projectName: navigationState.projectName
+      };
+      localStorage.setItem('userLogs_projectData', JSON.stringify(projectData));
+      return projectData;
+    }
+    
+    // Otherwise, try to get from localStorage
+    try {
+      const savedProjectData = localStorage.getItem('userLogs_projectData');
+      if (savedProjectData) {
+        return JSON.parse(savedProjectData);
+      }
+    } catch (e) {
+      console.error('Error reading project data from localStorage:', e);
+    }
+    return null;
+  };
+
+  const userData = getUserData();
+  const projectData = getProjectData();
+  const projectName = projectData?.projectName;
+  const projectId = projectData?.projectId;
+
+  // Only show error if we have absolutely no valid data
+  if (!userData || !projectName || !projectId) {
+    return (
+      <div className="p-6 max-w-6xl mx-auto">
+        <p className="text-red-600 text-center">Unable to retrieve the user logs</p>
+      </div>
+    );
+  }
   const [filter, setFilter] = useState('All Timelogs');
   const [data, setData] = useState<TimelogData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,8 +116,8 @@ const UserTimelogScreen = () => {
 
   useEffect(() => {
     const fetchUserTimelogs = async () => {
-      // If no valid user ID, show empty state
-      if (!userData.id || userData.id === '') {
+      // If no valid user ID, skip fetching
+      if (!userData?.id) {
         setData([]);
         setLoading(false);
         return;
@@ -162,8 +207,6 @@ const UserTimelogScreen = () => {
           });
         });
 
-        console.log({ logsByDate, userDates, userCreationDate })
-
         // Create timelog data for each day
         const timelogData: TimelogData[] = userDates.map((dateStr: string) => {
           const date = new Date(dateStr);
@@ -216,7 +259,7 @@ const UserTimelogScreen = () => {
     };
 
     fetchUserTimelogs();
-  }, [userData.id, projectId]);
+  }, [userData?.id, projectId]);
 
   const getStatusBadge = (status: string) => {
     if (status === 'Pending') {
