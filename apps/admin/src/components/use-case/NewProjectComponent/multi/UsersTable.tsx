@@ -28,7 +28,7 @@ const UsersTable: FC<IProps> = ({ teamMembers, onDelete }) => {
             role: eachMember.role || '',
             startTime: eachMember.startTime || '',
             endTime: eachMember.endTime || '',
-            overlappingHoursRequired: eachMember.overlappingHoursRequired || 0,
+            //overlappingHoursRequired: eachMember.overlappingHoursRequired || 0,
             requiresReporting: eachMember.requiresReporting || false,
         };
     });
@@ -61,10 +61,6 @@ const UsersTable: FC<IProps> = ({ teamMembers, onDelete }) => {
                     </div>
                 );
             },
-        },
-        {
-            accessorKey: 'overlappingHoursRequired',
-            header: 'Overlapping Hours',
         },
     ];
 
