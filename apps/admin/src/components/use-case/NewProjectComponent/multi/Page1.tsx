@@ -3,7 +3,6 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { typedEntries } from '@/utils/helpers'
 import React, { useEffect, useState, type FC } from 'react'
-import { checkProjectNameExists } from '@/services/queries'
 
 type FormVal<K = string> = {
     value: K,
@@ -43,7 +42,7 @@ const INITIAL_FORM_VALS = {
 const Page1: FC<IProps> = ({ next, back, defaultValues }) => {
     const [formData, setFormData] = useState<FormData>(INITIAL_FORM_VALS.state)
     const [errors, setErrors] = useState<FormDataAsStrings>(INITIAL_FORM_VALS.error)
-    const [isValidating, setIsValidating] = useState(false)
+    // removed remote validation (no longer using supabase)
     const [isSubmitting, setIsSubmitting] = useState(false)
 
     useEffect(() => {
@@ -73,22 +72,8 @@ const Page1: FC<IProps> = ({ next, back, defaultValues }) => {
             case "projectName":
                 if (trimmedValue === '' || !trimmedValue) {
                     error = 'Project name is required';
-                } else {
-                    // Check for duplicate project names
-                    setIsValidating(true);
-                    try {
-                        const result = await checkProjectNameExists(trimmedValue);
-                        if (result.error) {
-                            error = 'Error checking project name availability';
-                        } else if (result.data) {
-                            error = 'A project with this name already exists';
-                        }
-                    } catch (err) {
-                        error = 'Error validating project name';
-                    } finally {
-                        setIsValidating(false);
-                    }
                 }
+                // NOTE: duplicate-name check removed because Supabase is no longer used
                 break;
             case "projectDescription":
                 break;
@@ -164,11 +149,7 @@ const Page1: FC<IProps> = ({ next, back, defaultValues }) => {
                         }}
                         onBlur={() => handleBlur('projectName')}
                         label="Name of Project"
-                        disabled={isValidating}
                     />
-                    {isValidating && formData.projectName.value.trim() ? (
-                        <p className='text-blue-600 text-sm'>Checking availability...</p>
-                    ) : null}
                     {errors.projectName ? <p className='text-destructive'>{errors.projectName}</p> : null}
                 </div>
                 <div className="flex flex-col gap-1">
@@ -193,10 +174,10 @@ const Page1: FC<IProps> = ({ next, back, defaultValues }) => {
                 <div className="flex gap-2">
                     <Button 
                         type="submit" 
-                        disabled={hasErrors || !allBlurred || isValidating || isSubmitting}
+                        disabled={hasErrors || !allBlurred || isSubmitting}
                         loading={isSubmitting}
                     >
-                        {isValidating ? 'Validating...' : 'Next'}
+                        Next
                     </Button>
                     <Button onClick={() => {
                         back()

@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router'
 import type { ColumnDef } from '@tanstack/react-table'
 import { FileText, Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button';
-import { supabase } from "@/lib/supabaseClient"
+import { getProjects} from "@/api/services";
+import { type Project as ApiProject } from "@/api/types";
 import TableComponent from '../components/common/TableComponent/TableComponent'
 import { TooltipComponent } from '@/components/TooltipComponent';
 import { capitalizeWords } from '@/utils/helpers';
@@ -35,66 +36,38 @@ const Projects = () => {
 
     useEffect(() => {
         const fetchProjects = async () => {
-            const { data, error } = await supabase
-                .from("Project")
-                .select(`
-                    id,
-                    name,
-                    description,
-                    created_at,
-                    clientId,
-                    createdBy,
-                    client:clientId (
-                        firstName,
-                        lastName
-                    ),
-                    creator:createdBy (
-                        firstName,
-                        lastName
-                    ),
-                    TeamMember__User_Project (
-                        role,
-                        userId,
-                        user:userId (
-                            firstName,
-                            lastName,
-                            email
-                        )
-                    )
-                `)
-
-            if (error) {
-                console.error("Error fetching projects:", error)
-                setLoading(false)
-                return
+            try {
+                const res = await getProjects();
+                if (res.error) {
+                    console.error("Error fetching projects:", res.message);
+                    setProjects([]);
+                } else {
+                    const data = (res.data ?? []) as ApiProject[];
+                    const mapped: Project[] = data.map((p) => ({
+                        id: p.id,
+                        projectName: capitalizeWords(p.name ?? ''),
+                        projectId: p.id ?? '',
+                        clientName: p.client ? capitalizeWords(`${p.client.firstName} ${p.client.lastName}`) : '',
+                        createdBy: '', // Not provided by API response; can be enriched later
+                        createdDate: '', // Not provided by API response
+                        teamMembers: (p.teamMembers ?? []).map((tm) => ({
+                            id: tm.user?.id ?? tm.userId,
+                            name: tm.user ? capitalizeWords(`${tm.user.firstName} ${tm.user.lastName}`) : '',
+                            role: capitalizeWords(tm.role ?? ''),
+                            email: tm.user?.email ?? '',
+                        })),
+                    }));
+                    setProjects(mapped);
+                }
+            } catch (e) {
+                console.error("Unexpected error fetching projects:", e);
+                setProjects([]);
+            } finally {
+                setLoading(false);
             }
+        };
 
-            const mappedProjects: Project[] = (data ?? []).map((item: any) => ({
-                id: item.id,
-                projectName: capitalizeWords(item.name ?? ''),
-                projectId: capitalizeWords(item.id ?? ''),
-                clientName: item.client
-                    ? capitalizeWords(`${item.client.firstName} ${item.client.lastName}`)
-                    : '',
-                createdBy: item.creator
-                    ? capitalizeWords(`${item.creator.firstName} ${item.creator.lastName}`)
-                    : '',
-                createdDate: item.created_at,
-                teamMembers: (item.TeamMember__User_Project ?? []).map((tm: any) => ({
-                    id: tm.userId,
-                    name: tm.user
-                        ? capitalizeWords(`${tm.user.firstName} ${tm.user.lastName}`)
-                        : '',
-                    role: capitalizeWords(tm.role),
-                    email: tm.user?.email || '',
-                })),
-            }))
-
-            setProjects(mappedProjects)
-            setLoading(false)
-        }
-
-        fetchProjects()
+        fetchProjects();
     }, [])
 
     // Handle logs button click
@@ -144,12 +117,11 @@ const Projects = () => {
             accessorKey: 'createdDate',
             header: 'Created Date',
             cell: ({ getValue }) => {
-                const date = new Date(getValue() as string)
-                return date.toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
-                })
+                const raw = getValue() as string | undefined;
+                if (!raw) return '-';
+                const d = new Date(raw);
+                if (isNaN(d.getTime())) return '-';
+                return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
             },
         },
         {

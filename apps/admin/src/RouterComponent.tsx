@@ -6,11 +6,17 @@ import {
     useLocation,
 } from "react-router";
 import type { FC } from "react";
+import { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import type { AppDispatch } from '@/store/store';
+import { fetchUser } from '@/store/authSlice';
+import { getAccessToken } from '@/utils/storage';
 
 import Login from "./pages/Login";
-import { useAuth } from "./components/context/AuthProvider";
+import { useSelector } from 'react-redux';
+import type { RootState } from '@/store/store';
 import BaseLayout from "./components/use-case/BaseLayout";
-import { PAGES } from "./utils/constants";
+import { PAGES } from "./utils/pages";
 
 // ✅ Protects all authenticated pages
 const ProtectedRoute: FC<{ isAuthenticated: boolean }> = ({ isAuthenticated }) => {
@@ -66,8 +72,24 @@ const router = (isAuthenticated: boolean) =>
 
 // ✅ Wrapper that injects router based on auth
 const RouterComponent = () => {
-    const auth = useAuth();
-    return <RouterProvider router={router(auth.isAuthenticated)} />;
+    const dispatch = useDispatch<AppDispatch>();
+    const isAuthenticated = useSelector((state: RootState) => !!state.auth.user);
+    const [bootstrapped, setBootstrapped] = useState(false);
+
+    useEffect(() => {
+        const token = getAccessToken();
+        if (token) {
+            dispatch(fetchUser()).finally(() => setBootstrapped(true));
+        } else {
+            setBootstrapped(true);
+        }
+    }, [dispatch]);
+
+    if (!bootstrapped) {
+        return <div className="w-full h-screen flex items-center justify-center">Initializing...</div>;
+    }
+
+    return <RouterProvider router={router(isAuthenticated)} />;
 };
 
 export default RouterComponent;

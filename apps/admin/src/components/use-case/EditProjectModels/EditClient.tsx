@@ -4,7 +4,7 @@ import type { CommonProps, EditClientProps } from './types';
 import type { BasicUser } from '@/pages/EditProject';
 import { capitalizeWords } from '@/utils/helpers';
 import AutocompleteControlled from '@/components/common/AutocompleteComponent/AutoCompleteControlled';
-import { getUsers } from '@/services/queries';
+import { getUsers } from '@/api/services';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import ModelComponentWithExternalControl from '@/components/common/ModelComponent/ModelComponentWithExternalControl';

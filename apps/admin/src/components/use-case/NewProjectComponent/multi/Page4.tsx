@@ -5,7 +5,7 @@ import UsersTable from './UsersTable'
 import { capitalizeWords } from '@/utils/helpers'
 import { useUserStore } from '@/store/userStore'
 import CardComponent from '@/components/common/CardComponent/CardComponent'
-import { createProject } from '@/services/mutations'
+import { createProject } from '@/api/services'
 import { toast } from 'sonner'
 
 

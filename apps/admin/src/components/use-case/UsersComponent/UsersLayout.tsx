@@ -1,16 +1,16 @@
 import CardComponent from '@/components/common/CardComponent/CardComponent'
 import LinkedButtonComponent from '@/components/common/LinkedButtonComponent.tsx'
 import TableComponent from '@/components/common/TableComponent/TableComponent'
-import type { User } from '@/services/queries'
+import type { User } from '@/api/types'
 import type { ColumnDef } from '@tanstack/react-table'
 import type { FC } from 'react'
 
 const cols: ColumnDef<User>[] = [
     {
-        accessorKey: 'slug',
+        accessorKey: 'id',
         header: 'ID',
         cell: ({ getValue }) => (
-            <div className="max-w-[100px] text-center mx-auto truncate">{getValue<string>()}</div>
+            <div className="max-w-[200px] text-center mx-auto truncate">{getValue<string>()}</div>
         )
 
     },

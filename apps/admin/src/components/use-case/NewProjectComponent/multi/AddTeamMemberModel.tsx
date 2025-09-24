@@ -4,7 +4,10 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import type { TeamMember } from '@/pages/NewProject'
-import { getUsers, type TeamMemberWithName, type User } from '@/services/queries'
+import { getUsers } from '@/api/services'
+import type { User } from '@/api/types'
+// TeamMemberWithName wasn't exported from the previous location; create a local alias
+type TeamMemberWithName = TeamMember & { name: string }
 import { capitalizeWords } from '@/utils/helpers'
 import { Label } from '@radix-ui/react-label'
 import React, { useEffect, useState, type FC } from 'react'

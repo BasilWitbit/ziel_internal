@@ -6,7 +6,8 @@ import type { UserCategories } from '../UsersComponent/UsersLayout'
 // import { Checkbox } from '@/components/ui/checkbox'
 // import { Label } from '@/components/ui/label'
 import { useNavigate } from 'react-router'
-import { createUser } from '@/services/mutations'
+// Use backend API to create users
+import { createUser } from '@/api/authService'
 
 type FormInput = {
     value: string,
@@ -26,7 +27,7 @@ const NewUserComponent: FC<{
     getAddedUserData?: (user: unknown) => void;
 }> = ({
     // defaultUserType = 'users',
-    clientMode,
+   // clientMode,
     disableRelocate,
     getAddedUserData
 }) => {
@@ -37,7 +38,7 @@ const NewUserComponent: FC<{
         })
 
         // const [isAdmin, setIsAdmin] = useState(defaultUserType === 'admins');
-        const isAdmin = false;
+       // const isAdmin = false;
         const [loading, setLoading] = useState(false);
         const navigate = useNavigate();
 
@@ -45,40 +46,45 @@ const NewUserComponent: FC<{
         const allFilled = formValues.firstName.value && formValues.email.value;
 
         return (
-            <form className='flex flex-col gap-6' onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
-                e.preventDefault();
-                const { firstName, lastName, email } = formValues;
+            <form
+                className='flex flex-col gap-6'
+                onSubmit={async (e: React.FormEvent<HTMLFormElement>) => {
+                    e.preventDefault();
+                    const { firstName, lastName, email } = formValues;
 
-                setLoading(true);
+                    setLoading(true);
 
-                createUser({
-                    firstName: firstName.value,
-                    lastName: lastName.value ?? '',
-                    email: email.value,
-                    isAdmin,
-                    isClient: clientMode ? true : false
-                }).then((res) => {
-                    if (res.error) {
-                        toast.error(res.message);
-                        setLoading(false);
-                    } else {
+                    try {
+                        const userData = {
+                            firstName: firstName.value,
+                            lastName: lastName.value ?? '',
+                            email: email.value,
+                            password: 'Password@1',
+                        };
+
+                        const res = await createUser(userData);
+
                         toast.success('User created successfully!');
                         if (getAddedUserData) {
-                            getAddedUserData(res.data)
+                            getAddedUserData(res);
                         }
+
                         if (!disableRelocate) {
                             setTimeout(() => {
                                 navigate(`/users`);
                                 setLoading(false);
-                            }, 1000)
+                            }, 1000);
+                        } else {
+                            setLoading(false);
                         }
+                    } catch (error: any) {
+                        console.error('Error creating user:', error);
+                        const msg = error?.response?.data?.message || error?.message || 'Failed to create user. Please try again.';
+                        toast.error(msg);
+                        setLoading(false);
                     }
-                }).catch((error) => {
-                    console.error('Error creating user:', error);
-                    toast.error('Failed to create user. Please try again.');
-                    setLoading(false);
-                });
-            }}>
+                }}
+            >
                 <div className="flex flex-col flex-wrap md:flex-row gap-2">
                     <div className="max-w-[500px]">
                         <Input required
