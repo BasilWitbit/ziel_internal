@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { toast } from 'sonner'
 import TableComponent from '@/components/common/TableComponent/TableComponent'
 import type { ColumnDef } from '@tanstack/react-table'
 import { MoreVertical, Eye } from 'lucide-react'
@@ -171,7 +172,8 @@ const HomeComponent = () => {
   const handleSave = (payload: any) => {
     // for now just log; caller can extend to call API
     console.log('Saved day end logs:', payload)
-    handleClose()
+  toast.success('Logs submitted successfully')
+  handleClose()
   }
 
   // New: open modal to add a fresh day-end log

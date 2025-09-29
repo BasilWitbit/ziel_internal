@@ -7,7 +7,7 @@ import React, {
   useState,
 } from 'react';
 import type { ReactNode } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+//import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 // Button component (simplified for demo)
 const Button = forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -172,13 +172,14 @@ const CalendarViewTrigger = forwardRef<
   React.HTMLAttributes<HTMLButtonElement> & {
     view: View;
   }
->(({ children, view, ...props }) => {
+>(({ children, view, ...props }, ref) => {
   const { view: currentView, setView, onChangeView } = useCalendar();
 
   return (
     <Button
       size="sm"
       variant={currentView === view ? 'default' : 'ghost'}
+  ref={ref}
       {...props}
       onClick={() => {
         setView(view);
@@ -330,7 +331,7 @@ const CalendarMonthView = () => {
       <div className="grid grid-cols-7 gap-px sticky top-0 bg-white border-b border-gray-200">
         {weekDays.map((day, i) => (
           <div
-            key={day}
+            key={`${day}-${i}`}
             className={cn(
               'mb-2 text-center text-sm text-gray-600 py-2',
               [0, 6].includes(i) ? 'text-gray-400' : ''
@@ -399,99 +400,17 @@ const CalendarMonthView = () => {
 // Other view placeholders removed — calendar is month-only in this build.
 
 // Sample events data
-const sampleEvents: CalendarEvent[] = [
-  {
-    id: '1',
-    start: new Date(2024, 8, 8, 12, 0), // September 8, 2024, 12:00
-    end: new Date(2024, 8, 8, 13, 0),
-    title: 'event A',
-    color: 'pink'
-  },
-  {
-    id: '2',
-    start: new Date(2024, 8, 8, 13, 30), // September 8, 2024, 13:30
-    end: new Date(2024, 8, 8, 14, 30),
-    title: 'event B',
-    color: 'blue'
-  },
-  {
-    id: '3',
-    start: new Date(2024, 8, 15, 10, 0), // September 15, 2024, 10:00
-    end: new Date(2024, 8, 15, 11, 30),
-    title: 'Meeting',
-    color: 'green'
-  },
-  {
-    id: '4',
-    start: new Date(2024, 8, 22, 14, 0), // September 22, 2024, 14:00
-    end: new Date(2024, 8, 22, 15, 0),
-    title: 'Workshop',
-    color: 'purple'
-  }
-];
-
-const FullPageCalendar = () => {
-  const handleEventClick = (event: CalendarEvent) => {
-    console.log('Event clicked:', event);
-    // Handle event click - could open a modal, navigate, etc.
-  };
-
-  const handleViewChange = (view: string) => {
-    console.log('View changed to:', view);
-  };
-
-  return (
-    <div className="h-screen w-full bg-white text-black flex flex-col">
-      <Calendar
-        defaultDate={new Date(2024, 8, 1)} // September 2024
-        events={sampleEvents}
-        view="month"
-        enableHotkeys={true}
-        onEventClick={handleEventClick}
-        onChangeView={handleViewChange}
-      >
-        {/* Header with navigation and view controls */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          {/* Left side - only Month view (other views removed) */}
-          <div className="flex items-center space-x-1">
-            <CalendarViewTrigger view="month">
-              Month
-            </CalendarViewTrigger>
-          </div>
-
-          {/* Center - Navigation */}
-          <div className="flex items-center space-x-4">
-            <CalendarPrevTrigger>
-              <ChevronLeft className="h-4 w-4" />
-            </CalendarPrevTrigger>
-            
-            <CalendarTodayTrigger>
-              Today
-            </CalendarTodayTrigger>
-            
-            <CalendarNextTrigger>
-              <ChevronRight className="h-4 w-4" />
-            </CalendarNextTrigger>
-          </div>
-
-          {/* Right side - Current date */}
-          <div className="text-lg font-semibold">
-            <CalendarCurrentDate />
-          </div>
-        </div>
-
-        {/* Calendar content area (month-only) */}
-        <div className="flex-1 overflow-hidden">
-          <CalendarMonthView />
-        </div>
-
-        {/* Keyboard shortcuts hint */}
-        <div className="px-6 py-2 text-xs text-gray-500 border-t border-gray-200">
-          Shortcuts: T (Today) | ←/→ (Navigate)
-        </div>
-      </Calendar>
-    </div>
-  );
+// The FullPageCalendar wrapper has been moved to its own file
+// Export calendar primitives so external wrappers can compose the full page UI
+export {
+  Calendar,
+  CalendarViewTrigger,
+  CalendarPrevTrigger,
+  CalendarNextTrigger,
+  CalendarTodayTrigger,
+  CalendarCurrentDate,
+  CalendarMonthView,
 };
 
-export default FullPageCalendar;
+// Default export for backward compatibility: export the Calendar provider/component
+export default Calendar;

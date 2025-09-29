@@ -173,66 +173,78 @@ const UserTimelogScreen = () => {
   // Helper function to transform API data to UI format
   const transformTimelogData = (apiResponse: UserProjectTimelogsResponse, dateRange: { startDate: string, endDate: string }) => {
     const { logs } = apiResponse;
-    
+
     // Generate all dates in the range
     const allDates = generateDatesInRange(dateRange.startDate, dateRange.endDate);
-    
-    // Group all entries by their creation date
-    const entriesByDate = new Map<string, { entries: any[], logCreatedAt: string }>();
-    
-    logs.forEach(log => {
-      log.entries.forEach(entry => {
-        // Extract date from entry's createdAt timestamp
-        const entryDate = entry.createdAt.split('T')[0]; // Gets YYYY-MM-DD format
-        
-        if (!entriesByDate.has(entryDate)) {
-          entriesByDate.set(entryDate, { 
-            entries: [], 
-            logCreatedAt: entry.createdAt 
-          });
-        }
-        
-        entriesByDate.get(entryDate)?.entries.push(entry);
+
+    // Group all entries by their intended log date (prefer logDate, fallback to createdAt date)
+    const entriesByDate = new Map<string, { entries: any[]; logCreatedAt: string }>();
+
+    // Group by the parent timelog's logDate (the API returns logDate on the Timelog)
+    logs.forEach((log) => {
+      const logDateStr = log.logDate ? String(log.logDate).split('T')[0] : String(log.createdAt).split('T')[0];
+      // Always keep the actual timelog.createdAt for display (full timestamp)
+      const canonicalCreatedAt = String(log.createdAt);
+
+      if (!entriesByDate.has(logDateStr)) {
+        entriesByDate.set(logDateStr, { entries: [], logCreatedAt: canonicalCreatedAt });
+      }
+
+      // Push all entries from this timelog under the same logDate
+      log.entries.forEach((entry: any) => {
+        entriesByDate.get(logDateStr)?.entries.push(entry);
       });
     });
 
-    // Transform to UI format
-    const timelogData: TimelogData[] = allDates.map(dateStr => {
+    // Transform to UI format, skipping pending weekend dates
+    const timelogDataWithNulls = allDates.map((dateStr) => {
       const date = new Date(dateStr);
       const formattedDate = date.toLocaleDateString('en-US', {
         weekday: 'long',
         day: '2-digit',
         month: '2-digit',
-        year: 'numeric'
+        year: 'numeric',
       });
 
       const entriesForDate = entriesByDate.get(dateStr);
-      
+
       if (entriesForDate && entriesForDate.entries.length > 0) {
         // Transform entries to TaskData format
-        const tasks: TaskData[] = entriesForDate.entries.map(entry => ({
+        const tasks: TaskData[] = entriesForDate.entries.map((entry: any) => ({
           time: entry.timeTakenInHours,
           type: entry.type,
           task_description: entry.taskDescription,
-          featureTitle: entry.featureTitle || 'No Feature Title'
+          featureTitle: entry.featureTitle || 'No Feature Title',
         }));
 
         return {
           date: formattedDate,
           status: 'Completed',
           tasks,
-          createdAt: entriesForDate.logCreatedAt.split('T')[0] // Extract date part from ISO string
-        };
+          // show only the date part (YYYY-MM-DD) of the timelog's createdAt
+          createdAt: String(entriesForDate.logCreatedAt).split('T')[0],
+        } as TimelogData;
       } else {
         // No entries for this date
+        const day = date.getDay(); // 0 = Sunday, 6 = Saturday
+        const isWeekend = day === 0 || day === 6;
+
+        // For weekends, do not show pending logs — skip them
+        if (isWeekend) {
+          return null;
+        }
+
         return {
           date: formattedDate,
           status: 'Pending',
           tasks: [],
-          createdAt: ''
-        };
+          createdAt: '',
+        } as TimelogData;
       }
     });
+
+    // Remove any nulls (skipped weekend pending dates)
+    const timelogData: TimelogData[] = timelogDataWithNulls.filter((item): item is TimelogData => item !== null);
 
     return timelogData;
   };

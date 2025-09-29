@@ -256,14 +256,15 @@ const SingleDayForm: FC<IProps> = ({
         entries
       }
 
-  const response = await postDayEndLogs(payload)
+      const response = await postDayEndLogs(payload)
 
       if (response.error) {
         setShowError(true)
         setErrorMessage(response.message || 'Failed to submit logs')
         return false
       }
-      // Refresh pending logs after successful submission
+
+  // Refresh pending logs after successful submission
       await fetchPendingLogsForProject(currentProjectId)
 
       // Call the parent's next function to proceed
