@@ -1,7 +1,6 @@
-import type { ProjectType } from "@/components/context/DayEndLogFormProvider"
-import type { FC } from "react"
+//import type { ProjectType } from "@/components/context/DayEndLogFormProvider"
+{/*import type { FC } from "react"
 import MultiStepControllerLogs from "./MultiStepControllerLogs"
-
 type IProps = {
     missingLogs: ProjectType[],
     afterSubmission: () => void;
@@ -31,4 +30,4 @@ const DayEndLogsComponent: FC<IProps> = ({ missingLogs, afterSubmission }) => {
     )
 }
 
-export default DayEndLogsComponent
+export default DayEndLogsComponent*/}

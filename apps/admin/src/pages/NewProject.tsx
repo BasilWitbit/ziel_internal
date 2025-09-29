@@ -3,7 +3,7 @@ import Page1 from '@/components/use-case/NewProjectComponent/multi/Page1';
 import Page2 from '@/components/use-case/NewProjectComponent/multi/Page2';
 import Page3 from '@/components/use-case/NewProjectComponent/multi/Page3';
 import Page4 from '@/components/use-case/NewProjectComponent/multi/Page4';
-import { getUsers } from '@/services/queries';
+import { getUsers } from '@/api/services';
 import { useUserStore } from '@/store/userStore';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';

@@ -26,8 +26,8 @@ const LoginComponent = () => {
                 <h2 className="text-xl">Login</h2>
                 <Input
                     placeholder="Email"
-                    value={formData.username.value}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormValue(e.target.value, 'username')}
+                    value={formData.email.value}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFormValue(e.target.value, 'email')}
                 />
                 <Input
                     placeholder="Password"

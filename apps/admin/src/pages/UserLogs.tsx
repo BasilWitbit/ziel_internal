@@ -1,10 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router';
-import { supabase } from '@/lib/supabaseClient';
 import TableComponent from '../components/common/TableComponent/TableComponent';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
+import { getSingleUserTimelogs, getUsers } from '@/api/services';
+import type {
+	User,
+	
+    UserProjectTimelogsResponse
+} from "@/api/types";
 
 // Define the data types
 interface TaskData {
@@ -56,6 +61,7 @@ const UserTimelogScreen = () => {
     }
     return null;
   };
+
   const getProjectData = () => {
     // If coming from navigation state, save to localStorage and return
     if (navigationState?.projectName && navigationState?.projectId) {
@@ -92,168 +98,195 @@ const UserTimelogScreen = () => {
       </div>
     );
   }
+
   const [filter, setFilter] = useState('All Timelogs');
   const [data, setData] = useState<TimelogData[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [error, setError] = useState<string | null>(null);
   const itemsPerPage = 5;
 
-  // Generate dates from user creation date to today
-  const generateUserDates = (userCreatedDate: string) => {
-    const days = [];
-    const today = new Date();
-    const createdDate = new Date(userCreatedDate);
+  // Helper function to get user creation date and generate date range
+  const generateDateRangeFromUserCreation = async (userId: string) => {
+    try {
+      let userCreatedAt = null;
+      
+      // Try to get user creation date from the users list
+      try {
+        const usersResponse = await getUsers();
+        if (!usersResponse.error && usersResponse.data) {
+          const user = usersResponse.data.find((u: User) => u.id === userId);
+          if (user) {
+            userCreatedAt = user.createdAt;
+            console.log('Found user creation date from users list:', userCreatedAt);
+          }
+        }
+      } catch (usersError) {
+        console.warn('Could not fetch users list:', usersError);
+      }
+      
+      if (!userCreatedAt) {
+        console.warn('Could not determine user creation date, using 6 months fallback');
+        // Fallback to 6 months ago if we can't get creation date
+        const fallbackDate = new Date();
+        fallbackDate.setMonth(fallbackDate.getMonth() - 6);
+        return {
+          startDate: fallbackDate.toISOString().split('T')[0],
+          endDate: new Date().toISOString().split('T')[0]
+        };
+      }
+      
+      const startDate = new Date(userCreatedAt).toISOString().split('T')[0];
+      const endDate = new Date().toISOString().split('T')[0];
+      
+      console.log('User creation date found:', userCreatedAt, 'Using date range:', { startDate, endDate });
+      return { startDate, endDate };
+      
+    } catch (error) {
+      console.error('Error fetching user creation date:', error);
+      // Fallback to 6 months ago
+      const fallbackDate = new Date();
+      fallbackDate.setMonth(fallbackDate.getMonth() - 6);
+      return {
+        startDate: fallbackDate.toISOString().split('T')[0],
+        endDate: new Date().toISOString().split('T')[0]
+      };
+    }
+  };
 
-    // Start from today and go backwards to user creation date
-    const currentDate = new Date(today);
-    while (currentDate >= createdDate) {
-      days.push(currentDate.toISOString().split('T')[0]); // YYYY-MM-DD format
+  // Helper function to generate all dates in range
+  const generateDatesInRange = (startDate: string, endDate: string) => {
+    const dates = [];
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    // Start from end date and go backwards to start date for reverse chronological order
+    const currentDate = new Date(end);
+    while (currentDate >= start) {
+      dates.push(currentDate.toISOString().split('T')[0]);
       currentDate.setDate(currentDate.getDate() - 1);
     }
+    
+    return dates;
+  };
 
-    return days; // Already in reverse chronological order (today first)
+  // Helper function to transform API data to UI format
+  const transformTimelogData = (apiResponse: UserProjectTimelogsResponse, dateRange: { startDate: string, endDate: string }) => {
+    const { logs } = apiResponse;
+
+    // Generate all dates in the range
+    const allDates = generateDatesInRange(dateRange.startDate, dateRange.endDate);
+
+    // Group all entries by their intended log date (prefer logDate, fallback to createdAt date)
+    const entriesByDate = new Map<string, { entries: any[]; logCreatedAt: string }>();
+
+    // Group by the parent timelog's logDate (the API returns logDate on the Timelog)
+    logs.forEach((log) => {
+      const logDateStr = log.logDate ? String(log.logDate).split('T')[0] : String(log.createdAt).split('T')[0];
+      // Always keep the actual timelog.createdAt for display (full timestamp)
+      const canonicalCreatedAt = String(log.createdAt);
+
+      if (!entriesByDate.has(logDateStr)) {
+        entriesByDate.set(logDateStr, { entries: [], logCreatedAt: canonicalCreatedAt });
+      }
+
+      // Push all entries from this timelog under the same logDate
+      log.entries.forEach((entry: any) => {
+        entriesByDate.get(logDateStr)?.entries.push(entry);
+      });
+    });
+
+    // Transform to UI format, skipping pending weekend dates
+    const timelogDataWithNulls = allDates.map((dateStr) => {
+      const date = new Date(dateStr);
+      const formattedDate = date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      });
+
+      const entriesForDate = entriesByDate.get(dateStr);
+
+      if (entriesForDate && entriesForDate.entries.length > 0) {
+        // Transform entries to TaskData format
+        const tasks: TaskData[] = entriesForDate.entries.map((entry: any) => ({
+          time: entry.timeTakenInHours,
+          type: entry.type,
+          task_description: entry.taskDescription,
+          featureTitle: entry.featureTitle || 'No Feature Title',
+        }));
+
+        return {
+          date: formattedDate,
+          status: 'Completed',
+          tasks,
+          // show only the date part (YYYY-MM-DD) of the timelog's createdAt
+          createdAt: String(entriesForDate.logCreatedAt).split('T')[0],
+        } as TimelogData;
+      } else {
+        // No entries for this date
+        const day = date.getDay(); // 0 = Sunday, 6 = Saturday
+        const isWeekend = day === 0 || day === 6;
+
+        // For weekends, do not show pending logs — skip them
+        if (isWeekend) {
+          return null;
+        }
+
+        return {
+          date: formattedDate,
+          status: 'Pending',
+          tasks: [],
+          createdAt: '',
+        } as TimelogData;
+      }
+    });
+
+    // Remove any nulls (skipped weekend pending dates)
+    const timelogData: TimelogData[] = timelogDataWithNulls.filter((item): item is TimelogData => item !== null);
+
+    return timelogData;
   };
 
   useEffect(() => {
     const fetchUserTimelogs = async () => {
-      // If no valid user ID, skip fetching
-      if (!userData?.id) {
+      if (!userData?.id || !projectId) {
         setData([]);
         setLoading(false);
         return;
       }
 
       try {
-        // First, fetch user's creation date
-        const { data: userDetails, error: userError } = await supabase
-          .from('Users')
-          .select('created_at')
-          .eq('id', userData.id)
-          .single();
+        setError(null);
+        
+        // Get date range from user's creation date to today
+        const { startDate, endDate } = await generateDateRangeFromUserCreation(userData.id);
+        
+        console.log('Fetching timelogs for date range:', { startDate, endDate, userId: userData.id, projectId });
+        
+        // Call the API
+        const response = await getSingleUserTimelogs(
+          userData.id,
+          projectId,
+          startDate,
+          endDate
+        );
 
-        if (userError) {
-          console.error('Error fetching user data:', userError);
-          setLoading(false);
-          return;
+        console.log('API response:', response);
+
+        if (response.error || !response.data) {
+          throw new Error(response.message || 'Failed to fetch timelogs');
         }
 
-        // Fetch user's day end logs for the specific project
-        const { data: dayEndLogs, error } = await supabase
-          .from('DayEndLog')
-          .select(`
-            id,
-            created_at,
-            createdByUserId,
-            logDate,
-            projectId
-          `)
-          .eq('createdByUserId', userData.id)
-          .eq('projectId', projectId);
-
-        if (error) {
-          console.error('Error fetching timelogs:', error);
-          console.error('User ID:', userData.id);
-          console.error('Error details:', {
-            code: error.code,
-            message: error.message,
-            details: error.details
-          });
-          setLoading(false);
-          return;
-        }
-
-        // Fetch entries for all found logs
-        const logIds = (dayEndLogs || []).map(log => log.id);
-        let dayEndLogEntries: any[] = [];
-
-        if (logIds.length > 0) {
-          const { data: entries, error: entriesError } = await supabase
-            .from('DayEndLogEntry')
-            .select(`
-              id,
-              created_at,
-              task_description,
-              featureTitle,
-              timeTakenInHours,
-              type,
-              dayEndLogId
-            `)
-            .in('dayEndLogId', logIds);
-
-          if (entriesError) {
-            console.error('Error fetching log entries:', entriesError);
-          } else {
-            dayEndLogEntries = entries || [];
-          }
-        }
-
-        // Generate dates from user creation to today
-        const userCreationDate = userDetails?.created_at || new Date().toISOString();
-        const userDates = generateUserDates(userCreationDate);
-
-        // Create a map of logs by date with their entries
-        const logsByDate = new Map();
-        (dayEndLogs || []).forEach((log: any) => {
-          const logDate = new Date(log.logDate).toISOString().split('T')[0];
-          if (!logsByDate.has(logDate)) {
-            logsByDate.set(logDate, []);
-          }
-
-          // Find entries for this log
-          const logEntries = dayEndLogEntries.filter(entry => entry.dayEndLogId === log.id);
-          logsByDate.get(logDate).push({
-            ...log,
-            entries: logEntries
-          });
-        });
-
-        // Create timelog data for each day
-        const timelogData: TimelogData[] = userDates.map((dateStr: string) => {
-          const date = new Date(dateStr);
-          const formattedDate = date.toLocaleDateString('en-US', {
-            weekday: 'long',
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-          });
-
-          const dayLogs = logsByDate.get(dateStr) || [];
-
-          // Extract tasks from all logs for this day
-          const tasks: TaskData[] = [];
-          dayLogs.forEach((log: any) => {
-            (log.entries || []).forEach((entry: any) => {
-              tasks.push({
-                time: entry.timeTakenInHours || 0,
-                type: entry.type || 'Task',
-                task_description: entry.task_description || 'No description',
-                featureTitle: entry.featureTitle || 'No Feature Title'
-              });
-            });
-          });
-
-          const status = tasks.length > 0 ? 'Completed' : 'Pending';
-
-          // Use the earliest created_at among logs for that *logDate* (there's usually 1)
-          let createdAt = '';
-          if (dayLogs.length > 0) {
-            const earliest = new Date(
-              Math.min(...dayLogs.map((l: any) => new Date(l.created_at).getTime()))
-            );
-            createdAt = earliest.toISOString().split('T')[0];
-          }
-
-          return {
-            date: formattedDate,      // display 13/14/15 as the row date
-            status,
-            tasks,
-            createdAt: status === 'Completed' ? createdAt : ''
-          };
-        });
-        setData(timelogData);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching timelogs:', error);
+        // Transform API response to UI format
+        const transformedData = transformTimelogData(response.data, { startDate, endDate });
+        setData(transformedData);
+        
+      } catch (err: any) {
+        console.error('Error fetching timelogs:', err);
+        setError(err.message || 'Failed to fetch timelogs');
+      } finally {
         setLoading(false);
       }
     };
@@ -376,6 +409,23 @@ const UserTimelogScreen = () => {
       <div className="p-6 max-w-6xl mx-auto">
         <div className="flex justify-center items-center py-12">
           <div className="animate-pulse text-gray-500">Loading user timelogs...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 max-w-6xl mx-auto">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <h3 className="text-red-800 font-semibold mb-2">Error Loading Timelogs</h3>
+          <p className="text-red-700">{error}</p>
+          <Button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 bg-red-600 hover:bg-red-700 text-white"
+          >
+            Retry
+          </Button>
         </div>
       </div>
     );

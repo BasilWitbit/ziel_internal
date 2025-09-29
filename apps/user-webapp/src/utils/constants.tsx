@@ -1,5 +1,6 @@
 import Home from "@/pages/Home"
-import { HomeIcon } from "lucide-react"
+import { HomeIcon, Calendar as CalendarIcon } from "lucide-react"
+import FullPageCalendar from "@/components/common/FullCalanderComponent/FullPageCalendar"
 import type React from "react"
 
 export type Page = {
@@ -22,6 +23,14 @@ export const PAGES: Page[] = [
         heading: 'Home',
         element: <Home />,
         icon: <HomeIcon />,
+        inNav: true,
+    },
+    {
+        name: 'calendar',
+        path: "/calendar",
+        heading: 'Calendar',
+        element: <FullPageCalendar />,
+        icon: <CalendarIcon />,
         inNav: true,
     },
 ]

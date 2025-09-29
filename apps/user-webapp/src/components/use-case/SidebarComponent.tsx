@@ -1,8 +1,10 @@
 import { LogOutIcon } from "lucide-react"
 import { SidebarGroupComponent, type Item } from './SidebarGroupComponent';
-import { useAuth } from '../context/AuthProvider';
 import { Sidebar, SidebarContent } from "../ui/sidebar";
 import { PAGES } from "@/utils/constants";
+import { useDispatch } from 'react-redux';
+import type { AppDispatch } from '@/store/store';
+import { logout as logoutAction } from '@/store/authSlice';
 
 type MenuItemType = {
     title: string,
@@ -10,7 +12,8 @@ type MenuItemType = {
 }
 
 const SideBarComponent = () => {
-    const { logout } = useAuth();
+    const dispatch = useDispatch<AppDispatch>();
+    const logout = () => dispatch(logoutAction());
     const buildPages = PAGES.filter(page => page.inNav).map(page => ({
         name: page.name,
         title: page.heading,
@@ -20,10 +23,13 @@ const SideBarComponent = () => {
         },
         icon: page.icon
     }));
-    const menu: MenuItemType[] = [
+
+    // Use pages from PAGES (order and presence of calendar are controlled in `src/utils/constants.tsx`)
+    const buildPagesWithCalendar = buildPages;
+        const menu: MenuItemType[] = [
         {
             title: 'Pages',
-            items: buildPages
+            items: buildPagesWithCalendar
         },
         {
             title: 'User',

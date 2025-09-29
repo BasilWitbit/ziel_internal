@@ -1,7 +1,7 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import SideBarComponent from "./SidebarComponent"
 import { useLocation } from "react-router"
-import { PAGES } from "@/utils/constants";
+import { PAGES } from "@/utils/pages";
 import LinkedButtonComponent from "../common/LinkedButtonComponent.tsx";
 import { ArrowLeft } from 'lucide-react'
 

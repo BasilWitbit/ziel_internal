@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import TableComponent from '@/components/common/TableComponent/TableComponent';
 import type { TeamMember } from '@/pages/NewProject';
-import { useUserStore } from '@/store/userStore';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Check, X, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -18,20 +17,15 @@ type IProps = {
 };
 
 const UsersTable: FC<IProps> = ({ teamMembers, onDelete }) => {
-    const { users } = useUserStore();
-
-    const dataRows: RenderedUser[] = teamMembers.map((eachMember) => {
-        const foundUser = users.find((eachUser) => eachUser.id === eachMember.id);
-        return {
-            id: eachMember.id,
-            name: (eachMember as any).name || foundUser?.name || '',
-            role: eachMember.role || '',
-            startTime: eachMember.startTime || '',
-            endTime: eachMember.endTime || '',
-            //overlappingHoursRequired: eachMember.overlappingHoursRequired || 0,
-            requiresReporting: eachMember.requiresReporting || false,
-        };
-    });
+    const dataRows: RenderedUser[] = teamMembers.map((eachMember) => ({
+        id: eachMember.id,
+        name: (eachMember as any).name || '',
+        role: eachMember.role || '',
+        startTime: eachMember.startTime || '',
+        endTime: eachMember.endTime || '',
+        //overlappingHoursRequired: eachMember.overlappingHoursRequired || 0,
+        requiresReporting: eachMember.requiresReporting || false,
+    }));
 
     const baseCols: ColumnDef<RenderedUser>[] = [
         {

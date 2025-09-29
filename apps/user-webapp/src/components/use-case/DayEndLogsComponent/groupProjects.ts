@@ -1,4 +1,4 @@
-import type { LogsPayload } from "./MultiStepControllerLogs";
+//import type { LogsPayload } from "./MultiStepControllerLogs";
 import type { DayEndLogEntry } from "./SingleDayForm";
 
 export type GroupedPayload = {
@@ -10,7 +10,13 @@ export type GroupedPayload = {
         totalHours: number;
     }[];
 };
+export type LogsPayload = {
+    projectName: string;
+    projectId: string;
+    date: string;
+    logs: DayEndLogEntry[];
 
+}
 export function groupByProjectNameWithDates(data: LogsPayload[]): GroupedPayload[] {
     const projectMap: Record<string, Record<string, DayEndLogEntry[]>> = {};
 
