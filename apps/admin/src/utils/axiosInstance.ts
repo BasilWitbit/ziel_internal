@@ -3,7 +3,7 @@ import { getAccessToken, getRefreshToken, setTokens, clearTokens } from "./stora
 import { refreshToken as refreshApi } from "../api/authService";
 
 const instance = axios.create({
-  baseURL: "http://localhost:3000", // NestJS backend base URL
+  baseURL: "https://ziel-internal-backend.onrender.com", // NestJS backend base URL
   headers: {
     'Content-Type': 'application/json',
   },
