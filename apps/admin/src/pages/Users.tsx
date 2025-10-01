@@ -1,6 +1,7 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import UsersComponent from '@/components/use-case/UsersComponent';
-import { getUsers, type User } from '@/services/queries';
+import { getUsers } from '@/api/services';
+import {type User } from '@/api/types';
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner';
 

@@ -1,7 +1,7 @@
 import type { FC } from 'react'
 import TabsComponent from './TabsComponent'
 import UsersLayout from './UsersComponent/UsersLayout'
-import type { User } from '@/services/queries'
+import type { User } from '@/api/types'
 
 type IProps = {
     users: User[]

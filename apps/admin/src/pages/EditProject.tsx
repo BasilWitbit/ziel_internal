@@ -7,11 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { useNavigate, useParams } from "react-router";
-import { getProjectById } from "@/services/queries";
+import { getProjectById } from "@/api/services";
 import ModelComponentWithExternalControl from "@/components/common/ModelComponent/ModelComponentWithExternalControl";
 import { capitalizeWords } from "@/utils/helpers";
 import EditModelController from "@/components/use-case/EditProjectModels/EditModelController";
-import { updateProjectDetails } from "@/services/mutations";
+import { updateProject } from "@/api/services";
 import { toast } from "sonner";
 
 export type BasicUser = {
@@ -137,16 +137,18 @@ export default function ProjectEditPage() {
                 setErrorMsg(res.message || "Failed to fetch project.");
                 setProject(null);
             } else {
+                const client = res.data.client;
                 const projectToAdd: ProjectType = {
-                    clientUser: {
-                        id: res.data.clientUser.id ?? '',
-                        email: res.data.clientUser.email ?? '',
-                        firstName: capitalizeWords(res.data.clientUser.firstName) ?? '',
-                        lastName: capitalizeWords(res.data.clientUser.lastName) ?? ''
-                    },
+                    clientUser: client
+                        ? {
+                            id: client.id ?? '',
+                            email: client.email ?? '',
+                            firstName: capitalizeWords(client.firstName) ?? '',
+                            lastName: capitalizeWords(client.lastName) ?? ''
+                        }
+                        : { id: '', email: '', firstName: '', lastName: '' },
                     description: res.data.description ?? '',
                     name: res.data.name ?? '',
-
                 }
                 setProject(projectToAdd);
             }
@@ -260,24 +262,20 @@ export default function ProjectEditPage() {
                     </div> */}
                     <Button loading={saving} onClick={() => {
                         setSaving(true);
-                        updateProjectDetails(id as string, {
+                        updateProject(id as string, {
                             clientUserId: changes.clientUser?.id,
                             description: changes.description,
                             name: changes.name
                         }).then(res => {
                             if (res.error) {
-                                // Handle error
                                 console.error(res.message);
-                                // Show error toast or notification
                                 return toast.error(res.message);
                             }
                             toast.success('Project updated successfully');
                             navigate(`/projects`);
                         }).catch(err => {
                             if (err instanceof Error) {
-                                // Handle error
                                 console.error(err.message);
-                                // Show error toast or notification
                                 toast.error(err.message);
                             }
                         }).finally(() => {
