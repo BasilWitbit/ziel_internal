@@ -3,7 +3,7 @@ import { getAccessToken, getRefreshToken, setTokens, clearTokens } from "./stora
 import { refreshToken as refreshApi } from "../api/authService";
 
 const instance = axios.create({
-  baseURL: "http://localhost:3000", // NestJS backend base URL
+  baseURL: "https://temp-ziel-internal-backend-production.up.railway.app", // NestJS backend base URL
   headers: {
     'Content-Type': 'application/json',
   },
@@ -14,7 +14,7 @@ instance.interceptors.request.use((config) => {
   console.log('[axios] Request interceptor - method:', config.method);
   console.log('[axios] Request interceptor - headers:', config.headers);
   console.log('[axios] Request interceptor - data:', config.data);
-  
+
   const token = getAccessToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -33,9 +33,9 @@ instance.interceptors.response.use(
     console.error('[axios] Response interceptor - error:', error);
     console.error('[axios] Response interceptor - error status:', error.response?.status);
     console.error('[axios] Response interceptor - error data:', error.response?.data);
-    
-  const originalRequest = error.config || {};
-  const url: string = originalRequest.url || '';
+
+    const originalRequest = error.config || {};
+    const url: string = originalRequest.url || '';
 
     // If the 401 happened during LOGIN, don't try to refresh or redirect.
     // Let the caller (e.g. login form) handle the error and show a message.

@@ -1,6 +1,6 @@
 import Home from "@/pages/Home"
-import { HomeIcon, Calendar as CalendarIcon } from "lucide-react"
-import FullPageCalendar from "@/components/common/FullCalanderComponent/FullPageCalendar"
+import { HomeIcon } from "lucide-react"
+// import FullPageCalendar from "@/components/common/FullCalanderComponent/FullPageCalendar"
 import type React from "react"
 
 export type Page = {

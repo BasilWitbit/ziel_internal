@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import TableComponent from '@/components/common/TableComponent/TableComponent'
 import type { ColumnDef } from '@tanstack/react-table'
-import { MoreVertical, Eye } from 'lucide-react'
+// import { MoreVertical, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import SingleDayForm from '@/components/use-case/DayEndLogsComponent/SingleDayForm'
-import {getTimeLogSummary} from '@/apis/services'
+import { getTimeLogSummary } from '@/apis/services'
 import type { MySummaryResponse, ResponseData } from '@/apis/types' // Import the types
 
 // Define the data structure for time logs
@@ -18,93 +18,93 @@ interface TimeLogEntry {
   verified: boolean
 }
 
-// Verified badge component
-const VerifiedBadge = ({ verified }: { verified: boolean }) => (
-  <div className="flex justify-center">
-    {verified ? (
-      <span className="text-green-600">✓</span>
-    ) : (
-      <span className="text-gray-400">○</span>
-    )}
-  </div>
-)
+// // Verified badge component
+// const VerifiedBadge = ({ verified }: { verified: boolean }) => (
+//   <div className="flex justify-center">
+//     {verified ? (
+//       <span className="text-green-600">✓</span>
+//     ) : (
+//       <span className="text-gray-400">○</span>
+//     )}
+//   </div>
+// )
 
 // Dropdown component (kept but removed the "Mark Day End Logs" item so it no longer opens the modal)
-const ActionsDropdown = () => {
-  const [isOpen, setIsOpen] = useState(false)
-  
-  const toggleDropdown = () => setIsOpen(!isOpen)
-  
-  // Close dropdown when clicking outside
-  React.useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement
-      if (!target.closest('.dropdown-container')) {
-        setIsOpen(false)
-      }
-    }
+// const ActionsDropdown = () => {
+//   const [isOpen, setIsOpen] = useState(false)
 
-    if (isOpen) {
-      document.addEventListener('click', handleClickOutside)
-    }
+//   const toggleDropdown = () => setIsOpen(!isOpen)
 
-    return () => {
-      document.removeEventListener('click', handleClickOutside)
-    }
-  }, [isOpen])
+//   // Close dropdown when clicking outside
+//   React.useEffect(() => {
+//     const handleClickOutside = (event: MouseEvent) => {
+//       const target = event.target as HTMLElement
+//       if (!target.closest('.dropdown-container')) {
+//         setIsOpen(false)
+//       }
+//     }
 
-  return (
-    <div className="relative dropdown-container">
-      <Button
-        onClick={toggleDropdown}
-        variant="ghost"
-        size="icon"
-        className="text-gray-400 hover:text-gray-600 p-1"
-        aria-label="More actions"
-      >
-        <MoreVertical size={16} />
-      </Button>
-      
-      {/* Intentionally left empty: no "Mark Day End Logs" item here to avoid opening the modal from the three-dots menu */}
-      {isOpen && (
-        <div className="absolute right-0 top-8 z-50 bg-white border border-gray-200 rounded-md shadow-lg py-1 min-w-[160px]">
-          {/* Add other non-modal actions here if needed */}
-        </div>
-      )}
-    </div>
-  )
-}
+//     if (isOpen) {
+//       document.addEventListener('click', handleClickOutside)
+//     }
 
-// Actions component
-const ActionsCell = ({ row }: { row: TimeLogEntry }) => {
-  return (
-    <div className="flex justify-center space-x-2">
-      <Button variant="ghost" size="icon" className="text-gray-400 hover:text-gray-600 p-1" aria-label={`View ${row.project}`}>
-        <Eye size={16} />
-      </Button>
-      <ActionsDropdown />
-    </div>
-  )
-}
+//     return () => {
+//       document.removeEventListener('click', handleClickOutside)
+//     }
+//   }, [isOpen])
+
+//   return (
+//     <div className="relative dropdown-container">
+//       <Button
+//         onClick={toggleDropdown}
+//         variant="ghost"
+//         size="icon"
+//         className="text-gray-400 hover:text-gray-600 p-1"
+//         aria-label="More actions"
+//       >
+//         <MoreVertical size={16} />
+//       </Button>
+
+//       {/* Intentionally left empty: no "Mark Day End Logs" item here to avoid opening the modal from the three-dots menu */}
+//       {isOpen && (
+//         <div className="absolute right-0 top-8 z-50 bg-white border border-gray-200 rounded-md shadow-lg py-1 min-w-[160px]">
+//           {/* Add other non-modal actions here if needed */}
+//         </div>
+//       )}
+//     </div>
+//   )
+// }
+
+// // Actions component
+// const ActionsCell = ({ row }: { row: TimeLogEntry }) => {
+//   return (
+//     <div className="flex justify-center space-x-2">
+//       <Button variant="ghost" size="icon" className="text-gray-400 hover:text-gray-600 p-1" aria-label={`View ${row.project}`}>
+//         <Eye size={16} />
+//       </Button>
+//       <ActionsDropdown />
+//     </div>
+//   )
+// }
 
 // Table columns definition
 const columns: ColumnDef<TimeLogEntry>[] = [
-  { 
-    accessorKey: 'project', 
-    header: 'Project' 
+  {
+    accessorKey: 'project',
+    header: 'Project'
   },
-  { 
-    accessorKey: 'date', 
-    header: 'Date' 
+  {
+    accessorKey: 'date',
+    header: 'Date'
   },
-  { 
-    accessorKey: 'hours', 
+  {
+    accessorKey: 'hours',
     header: 'Total Hours',
     cell: ({ getValue }) => (getValue() as number).toFixed(2),
   },
-  { 
-    accessorKey: 'entriesCount', 
-    header: 'Entries Count' 
+  {
+    accessorKey: 'entriesCount',
+    header: 'Entries Count'
   },
   // {
   //   accessorKey: 'verified',
@@ -172,8 +172,8 @@ const HomeComponent = () => {
   const handleSave = (payload: any) => {
     // for now just log; caller can extend to call API
     console.log('Saved day end logs:', payload)
-  toast.success('Logs submitted successfully')
-  handleClose()
+    toast.success('Logs submitted successfully')
+    handleClose()
   }
 
   // New: open modal to add a fresh day-end log
@@ -209,13 +209,13 @@ const HomeComponent = () => {
         </div>
 
         {/* NEW: Add Day End Logs button */}
-            <div>
-              <Button onClick={handleAddDayEnd} className="bg-black text-white hover:bg-gray-900" variant="default">
-                Add Day End Logs
-              </Button>
-            </div>
+        <div>
+          <Button onClick={handleAddDayEnd} className="bg-black text-white hover:bg-gray-900" variant="default">
+            Add Day End Logs
+          </Button>
+        </div>
       </div>
-      
+
       <div className="bg-white rounded-lg shadow">
         <div className="p-6">
           <TableComponent
@@ -239,7 +239,7 @@ const HomeComponent = () => {
               </div>
             </div>
           ) : null}
-          
+
         </div>
       </div>
     </div>
