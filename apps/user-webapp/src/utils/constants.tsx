@@ -25,12 +25,12 @@ export const PAGES: Page[] = [
         icon: <HomeIcon />,
         inNav: true,
     },
-    {
-        name: 'calendar',
-        path: "/calendar",
-        heading: 'Calendar',
-        element: <FullPageCalendar />,
-        icon: <CalendarIcon />,
-        inNav: true,
-    },
+    // {
+    //     name: 'calendar',
+    //     path: "/calendar",
+    //     heading: 'Calendar',
+    //     element: <FullPageCalendar />,
+    //     icon: <CalendarIcon />,
+    //     inNav: true,
+    // },
 ]

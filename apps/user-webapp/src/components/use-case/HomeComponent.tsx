@@ -106,18 +106,18 @@ const columns: ColumnDef<TimeLogEntry>[] = [
     accessorKey: 'entriesCount', 
     header: 'Entries Count' 
   },
-  {
-    accessorKey: 'verified',
-    header: 'Marked',
-    cell: ({ getValue }) => (
-      <VerifiedBadge verified={getValue() as boolean} />
-    ),
-  },
-  {
-    id: 'actions',
-    header: 'Action',
-    cell: ({ row }) => <ActionsCell row={row.original} />,
-  },
+  // {
+  //   accessorKey: 'verified',
+  //   header: 'Marked',
+  //   cell: ({ getValue }) => (
+  //     <VerifiedBadge verified={getValue() as boolean} />
+  //   ),
+  // },
+  // {
+  //   id: 'actions',
+  //   header: 'Action',
+  //   cell: ({ row }) => <ActionsCell row={row.original} />,
+  // },
 ]
 
 const HomeComponent = () => {
