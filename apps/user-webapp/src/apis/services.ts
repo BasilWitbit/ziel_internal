@@ -10,11 +10,8 @@ import type {
 	Timelog,
 	UserProjectTimelogsResponse,
 	MySummaryResponse,
-    MyPendingLogsResponse,
+	MyPendingLogsResponse,
 } from "./types";
-
-
-
 
 export const createProject = async (
 	payload: CreateProjectPayload | UiProjectData
@@ -38,18 +35,18 @@ export const createProject = async (
 
 		const apiPayload: CreateProjectPayload = isUiPayload(payload)
 			? {
-					clientUserId: payload.clientUserId ?? null,
-					name: payload.projectName.trim(),
-					description: payload.projectDescription.trim(),
-					teamMembers: (payload.users || []).map((member) => ({
-						userId: member.id,
-						role: member.role,
-						startTime: toHHmmss(member.startTime),
-						endTime: toHHmmss(member.endTime),
-						overlappingHoursRequired: member.overlappingHoursRequired ?? 0,
-						requiresReporting: member.requiresReporting,
-					})),
-				}
+				clientUserId: payload.clientUserId ?? null,
+				name: payload.projectName.trim(),
+				description: payload.projectDescription.trim(),
+				teamMembers: (payload.users || []).map((member) => ({
+					userId: member.id,
+					role: member.role,
+					startTime: toHHmmss(member.startTime),
+					endTime: toHHmmss(member.endTime),
+					overlappingHoursRequired: member.overlappingHoursRequired ?? 0,
+					requiresReporting: member.requiresReporting,
+				})),
+			}
 			: (payload as CreateProjectPayload);
 
 		// Only include clientUserId if provided (avoid DTO failures)
@@ -70,13 +67,13 @@ export const createProject = async (
 			message: "Project created successfully",
 			data: data ?? (null as unknown as Project),
 		};
-		} catch (err: any) {
-			// Prefer detailed Nest validation errors
-			let message = err?.response?.data?.message || err?.response?.data?.error?.message || err?.message;
-			if (Array.isArray(message)) message = message.join(", ");
-			message = message || "Failed to create project";
-			return { error: true, message } as ResponseData<Project>;
-		}
+	} catch (err: any) {
+		// Prefer detailed Nest validation errors
+		let message = err?.response?.data?.message || err?.response?.data?.error?.message || err?.message;
+		if (Array.isArray(message)) message = message.join(", ");
+		message = message || "Failed to create project";
+		return { error: true, message } as ResponseData<Project>;
+	}
 };
 
 
@@ -144,29 +141,29 @@ export const getUsers = async (): Promise<ResponseData<User[]>> => {
 		const message = err?.response?.data?.message || err?.message || "Failed to fetch users";
 		return { error: true, message, data: [] };
 	}
-    
+
 };
 
 export const myPendingLogs = async (): Promise<ResponseData<MyPendingLogsResponse>> => {
-  try {
-    const token = getAccessToken();
-    const res = await axios.get("/day-end-logs/my-pending-logs", {
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-    });
+	try {
+		const token = getAccessToken();
+		const res = await axios.get("/day-end-logs/my-pending-logs", {
+			headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+		});
 
-    // Defensive unwrap in case Nest wraps differently
-    const data = (res?.data?.data?.data ?? res?.data?.data) as MyPendingLogsResponse;
+		// Defensive unwrap in case Nest wraps differently
+		const data = (res?.data?.data?.data ?? res?.data?.data) as MyPendingLogsResponse;
 
-    return {
-      error: false,
-      message: res?.data?.message || "My pending logs fetched successfully",
-      data,
-    };
-  } catch (err: any) {
-    let message = err?.response?.data?.message || err?.message || "Failed to fetch pending logs";
-    if (Array.isArray(message)) message = message.join(", ");
-    return { error: true, message, data: undefined };
-  }
+		return {
+			error: false,
+			message: res?.data?.message || "My pending logs fetched successfully",
+			data,
+		};
+	} catch (err: any) {
+		let message = err?.response?.data?.message || err?.message || "Failed to fetch pending logs";
+		if (Array.isArray(message)) message = message.join(", ");
+		return { error: true, message, data: undefined };
+	}
 };
 
 
@@ -241,45 +238,45 @@ export const getProjectById = async (id: string): Promise<ResponseData<Project |
 };
 
 export const getSingleUserTimelogs = async (
-  userId: string,
-  projectId: string,
-  startDate: string,
-  endDate: string
+	userId: string,
+	projectId: string,
+	startDate: string,
+	endDate: string
 ): Promise<ResponseData<UserProjectTimelogsResponse>> => {
-  try {
-    const token = getAccessToken();
+	try {
+		const token = getAccessToken();
 
-    const res = await axios.get(`/day-end-logs/user-project-timelogs`, {
-      params: { userId, projectId, startDate, endDate },
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-    });
+		const res = await axios.get(`/day-end-logs/user-project-timelogs`, {
+			params: { userId, projectId, startDate, endDate },
+			headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+		});
 
-    const data = (res?.data?.data?.data ?? res?.data?.data) as UserProjectTimelogsResponse;
+		const data = (res?.data?.data?.data ?? res?.data?.data) as UserProjectTimelogsResponse;
 
-    return { error: false, message: res?.data?.message || "Success", data };
-  } catch (err: any) {
-    let message = err?.response?.data?.message || err?.message;
-    if (Array.isArray(message)) message = message.join(", ");
-    return { error: true, message, data: undefined };
-  }
+		return { error: false, message: res?.data?.message || "Success", data };
+	} catch (err: any) {
+		let message = err?.response?.data?.message || err?.message;
+		if (Array.isArray(message)) message = message.join(", ");
+		return { error: true, message, data: undefined };
+	}
 };
 
 export const getTimeLogSummary = async (): Promise<ResponseData<MySummaryResponse>> => {
-  try {
-    const token = getAccessToken();
+	try {
+		const token = getAccessToken();
 
-    const res = await axios.get('/day-end-logs/my-summary', {
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-    });
+		const res = await axios.get('/day-end-logs/my-summary', {
+			headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+		});
 
-    const data = (res?.data?.data?.data ?? res?.data?.data) as MySummaryResponse;
+		const data = (res?.data?.data?.data ?? res?.data?.data) as MySummaryResponse;
 
-    return { error: false, message: res?.data?.message || "Success", data };
-  } catch (err: any) {
-    let message = err?.response?.data?.message || err?.message;
-    if (Array.isArray(message)) message = message.join(", ");
-    return { error: true, message, data: undefined };
-  }
+		return { error: false, message: res?.data?.message || "Success", data };
+	} catch (err: any) {
+		let message = err?.response?.data?.message || err?.message;
+		if (Array.isArray(message)) message = message.join(", ");
+		return { error: true, message, data: undefined };
+	}
 };
 
 export const postDayEndLogs = async (

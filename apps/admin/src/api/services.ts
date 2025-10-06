@@ -11,10 +11,6 @@ import type {
 	UserProjectTimelogsResponse
 } from "./types";
 
-
-
-
-
 export const createProject = async (
 	payload: CreateProjectPayload | UiProjectData
 ): Promise<ResponseData<Project>> => {
