@@ -74,11 +74,11 @@ export const loginUser = createAsyncThunk(
           console.log('[auth/loginUser] extracted user data for admin check:', userData);
 
           // Enforce admin for admin app - check the nested data
-          if (userData && userData.isAdmin === true) {
-            console.warn('[auth/loginUser] user is not admin, clearing tokens');
-            clearTokens();
-            return rejectWithValue('This is not a valid user');
-          }
+          // if (userData && userData.isAdmin === true) {
+          //   console.warn('[auth/loginUser] user is not admin, clearing tokens');
+          //   clearTokens();
+          //   return rejectWithValue('This is not a valid user');
+          // }
 
           console.log('[auth/loginUser] admin check passed, isAdmin:', userData?.isAdmin);
           return user;
