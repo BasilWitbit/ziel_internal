@@ -4,6 +4,7 @@ import { refreshToken as refreshApi } from "../api/authService";
 
 const instance = axios.create({
   baseURL: "https://temp-ziel-internal-backend-production.up.railway.app", // NestJS backend base URL
+  // baseURL: "http://localhost:3000", // NestJS backend base URL
   headers: {
     'Content-Type': 'application/json',
   },
