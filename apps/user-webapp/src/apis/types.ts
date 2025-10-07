@@ -220,4 +220,8 @@ export interface MyPendingLogsResponse {
   message: string;
 }
 
+export interface ValidDateRangeResponse {
+  minDate: string; // ISO date string
+}
+
 
