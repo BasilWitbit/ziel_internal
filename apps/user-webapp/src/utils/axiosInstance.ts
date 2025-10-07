@@ -10,6 +10,8 @@ const instance = axios.create({
   },
 });
 
+console.log('hi')
+
 instance.interceptors.request.use((config) => {
   console.log('[axios] Request interceptor - URL:', config.url || '');
   console.log('[axios] Request interceptor - method:', config.method);
