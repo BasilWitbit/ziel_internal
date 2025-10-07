@@ -16,6 +16,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 const frameworks = [
     {
@@ -78,43 +79,51 @@ const AutcompleteComponent: React.FC<IProps> = ({ createNewBtn, options = framew
                     <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-full p-0">
+            <PopoverContent
+                className="w-[var(--radix-popover-trigger-width)] p-0"
+                sideOffset={4}
+                collisionPadding={8}
+            >
                 <Command className="w-full">
                     <CommandInput placeholder="Search..." />
-                    {createNewBtn ? <Button
-                        onClick={(e) => {
-                            setOpen(false);
-                            createNewBtn.onClick(e)
-                        }}
-                        {...createNewBtn.props}
-                        className={cn("w-[90%] mx-auto", createNewBtn.props?.className)}
-                    >{createNewBtn.label}</Button> : null}
-                    <CommandList>
-                        <CommandEmpty>No options found</CommandEmpty>
-                        <CommandGroup>
-                            {options.map((option) => (
-                                <CommandItem
-                                    key={option.value}
-                                    value={`${option.label} ${option.value}`} // enable better search
-                                    onSelect={() => {
-                                        setValue(option.value); // use actual value for internal state
-                                        if (sideEffects) { sideEffects(option) }
-
-                                        setOpen(false);
+                    <ScrollArea className="max-h-[min(60vh,384px)]">
+                        {createNewBtn ? (
+                            <div className="px-2 py-2">
+                                <Button
+                                    onClick={(e) => {
+                                        setOpen(false)
+                                        createNewBtn.onClick(e)
                                     }}
-
+                                    {...createNewBtn.props}
+                                    className={cn("w-[90%] mx-auto", createNewBtn.props?.className)}
                                 >
-                                    <CheckIcon
-                                        className={cn(
-                                            "mr-2 h-4 w-4",
-                                            value === option.value ? "opacity-100" : "opacity-0"
-                                        )}
-                                    />
-                                    {option.label}
-                                </CommandItem>
-                            ))}
-                        </CommandGroup>
-                    </CommandList>
+                                    {createNewBtn.label}
+                                </Button>
+                            </div>
+                        ) : null}
+
+                        <CommandList>
+                            <CommandEmpty>No options found</CommandEmpty>
+                            <CommandGroup>
+                                {options.map((option) => (
+                                    <CommandItem
+                                        key={option.value}
+                                        value={`${option.label} ${option.value}`}
+                                        onSelect={() => {
+                                            setValue(option.value)
+                                            sideEffects?.(option)
+                                            setOpen(false)
+                                        }}
+                                    >
+                                        <CheckIcon
+                                            className={cn("mr-2 h-4 w-4", value === option.value ? "opacity-100" : "opacity-0")}
+                                        />
+                                        {option.label}
+                                    </CommandItem>
+                                ))}
+                            </CommandGroup>
+                        </CommandList>
+                    </ScrollArea>
                 </Command>
             </PopoverContent>
         </Popover>

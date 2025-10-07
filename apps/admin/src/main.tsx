@@ -24,7 +24,7 @@ createRoot(document.getElementById('root')!).render(
         }
         closeButton={true}
         toastOptions={{
-          duration: 1500,
+          duration: 1501,
         }}
       />
     </Provider>
