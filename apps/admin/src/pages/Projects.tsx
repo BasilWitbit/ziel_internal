@@ -72,7 +72,16 @@ const Projects = () => {
 
     // Handle logs button click
     const handleViewLogs = (member: TeamMember, project: Project) => {
-        navigate('/user-logs', {
+        // Note: TeamMember currently exposes a single `id` field.
+        // We use it for both teamMemberId and userId here. If your
+        // model provides separate ids, replace accordingly.
+        const teamMemberId = member.id ?? '';
+        const userId = member.id ?? '';
+        const projectId = project.id ?? '';
+
+        const query = `teamMemberId=${encodeURIComponent(teamMemberId)}&userId=${encodeURIComponent(userId)}&projectId=${encodeURIComponent(projectId)}`;
+        
+        navigate(`/user-logs?${query}`, {
             state: {
                 user: member,
                 projectName: project.projectName,

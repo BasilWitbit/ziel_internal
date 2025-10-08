@@ -66,7 +66,12 @@ const NewUserComponent: FC<{
 
                         toast.success('User created successfully!');
                         if (getAddedUserData) {
-                            getAddedUserData(res);
+                            // usman leghari bug fix 2
+                            // createUser returns a wrapped response. the actual user object is at res.data.data
+                            // pass the inner user to callers so they receive id/firstName/lastName directly
+                            // fallback to `res` if the shape is different in other environments
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                            getAddedUserData(res?.data?.data ?? res);
                         }
 
                         if (!disableRelocate) {

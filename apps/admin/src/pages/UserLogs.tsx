@@ -4,7 +4,7 @@ import { useLocation } from 'react-router';
 import TableComponent from '../components/common/TableComponent/TableComponent';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
-import { getSingleUserTimelogs, getUsers } from '@/api/services';
+import { getSingleUserTimelogs, getUsers, getUserById, getProjectById } from '@/api/services';
 import type {
 	User,
 	
@@ -41,9 +41,23 @@ interface NavigationState {
 
 const UserTimelogScreen = () => {
   const location = useLocation();
-  const navigationState = location.state as NavigationState | null;
+  // const navigationState = location.state as NavigationState | null;
+  
+  // console.log('Location object:', location);
+  const queryObject= new URLSearchParams(location.search);
+  const userID=queryObject.has('userId')?queryObject.get('userId'):'';
+  const projectID=queryObject.has('projectId')?queryObject.get('projectId'):'';
+  const teamMemberID=queryObject.has('teamMemberId')?queryObject.get('teamMemberId'):'';
+  console.log('User ID:', userID);
+  console.log('Project ID:', projectID);
+  console.log('Team Member ID:', teamMemberID);
+type State = {
+            user: TeamMember;
+            projectName: string;
+            projectId: string;
+        }
 
-  const getUserData = () => {
+  const getUserData = (): TeamMember => {
     // If coming from navigation state, save to localStorage and return
     if (navigationState?.user) {
       const userData = navigationState.user;
@@ -109,22 +123,51 @@ const UserTimelogScreen = () => {
   // Helper function to get user creation date and generate date range
   const generateDateRangeFromUserCreation = async (userId: string) => {
     try {
-      let userCreatedAt = null;
-      
-      // Try to get user creation date from the users list
+      let userCreatedAt: string | null = null;
+
+      // Preferred: fetch the single user (reliable, not paginated)
       try {
-        const usersResponse = await getUsers();
-        if (!usersResponse.error && usersResponse.data) {
-          const user = usersResponse.data.find((u: User) => u.id === userId);
-          if (user) {
-            userCreatedAt = user.createdAt;
-            console.log('Found user creation date from users list:', userCreatedAt);
-          }
+        const singleResp = await getUserById(userId);
+        if (!singleResp.error && singleResp.data) {
+          userCreatedAt = (singleResp.data as User).createdAt as unknown as string;
+          console.log('Found user creation date from getUserById:', userCreatedAt);
         }
-      } catch (usersError) {
-        console.warn('Could not fetch users list:', usersError);
+      } catch (singleErr) {
+        console.warn('Could not fetch single user by id:', singleErr);
       }
-      
+
+      // Fallback: try the users list (paginated) — less reliable
+      if (!userCreatedAt) {
+        try {
+          const usersResponse = await getUsers();
+          if (!usersResponse.error && usersResponse.data) {
+            const user = usersResponse.data.find((u: User) => u.id === userId);
+            if (user) {
+              userCreatedAt = user.createdAt as unknown as string;
+              console.log('Found user creation date from users list:', userCreatedAt);
+            }
+          }
+        } catch (usersError) {
+          console.warn('Could not fetch users list:', usersError);
+        }
+      }
+
+      // Additional fallback: check project team-members for the user's join date (preferred for project-scoped logs)
+      if (!userCreatedAt && projectId) {
+        try {
+          const projResp = await getProjectById(projectId);
+          if (!projResp.error && projResp.data && Array.isArray((projResp.data as any).teamMembers)) {
+            const tm = (projResp.data as any).teamMembers.find((m: any) => m.user?.id === userId);
+            if (tm && tm.createdAt) {
+              userCreatedAt = tm.createdAt as string;
+              console.log('Found user creation date from project teamMembers:', userCreatedAt);
+            }
+          }
+        } catch (projErr) {
+          console.warn('Could not fetch project/teamMembers:', projErr);
+        }
+      }
+
       if (!userCreatedAt) {
         console.warn('Could not determine user creation date, using 6 months fallback');
         // Fallback to 6 months ago if we can't get creation date
@@ -135,13 +178,13 @@ const UserTimelogScreen = () => {
           endDate: new Date().toISOString().split('T')[0]
         };
       }
-      
+
       const startDate = new Date(userCreatedAt).toISOString().split('T')[0];
       const endDate = new Date().toISOString().split('T')[0];
-      
+
       console.log('User creation date found:', userCreatedAt, 'Using date range:', { startDate, endDate });
       return { startDate, endDate };
-      
+
     } catch (error) {
       console.error('Error fetching user creation date:', error);
       // Fallback to 6 months ago
@@ -279,9 +322,15 @@ const UserTimelogScreen = () => {
           throw new Error(response.message || 'Failed to fetch timelogs');
         }
 
-        // Transform API response to UI format
-        const transformedData = transformTimelogData(response.data, { startDate, endDate });
-        setData(transformedData);
+  // Prefer server-provided dateRange (backend may enforce team-join date)
+  const serverRange = response.data?.summary?.dateRange as { from?: string; to?: string } | undefined;
+  const finalStart = serverRange?.from || startDate;
+  const finalEnd = serverRange?.to || endDate;
+  console.log('Using date range for UI (final):', { finalStart, finalEnd, serverRange });
+
+  // Transform API response to UI format using the final date range
+  const transformedData = transformTimelogData(response.data, { startDate: finalStart, endDate: finalEnd });
+  setData(transformedData);
         
       } catch (err: any) {
         console.error('Error fetching timelogs:', err);
