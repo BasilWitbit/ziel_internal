@@ -156,3 +156,28 @@ export type UserProjectTimelogsResponse = {
   summary: TimelogSummary;
   logs: Timelog[];
 };
+
+export type TaskEntryV2 = {
+  id: string;
+  time: number;
+  type: string;
+  task_description: string;
+  featureTitle: string | null;
+}
+
+export type TimeLogV2 = {
+  date: string; // '2025-10-01'
+  status: 'completed' | 'pending';
+  createdAt: string; // ISO date string
+  tasks?: TaskEntryV2[]
+}
+
+export type UserProjectTimeLogsV2Response = {
+  summary: {
+    projectName: string;
+    userName: string;
+    role: string;
+    email: string;
+  }
+  logs: TimeLogV2[]
+}

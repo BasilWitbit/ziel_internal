@@ -30,10 +30,10 @@ export type DayEndLogEntry = {
   taskDescription: string
 }
 export type LogsPayload = {
-    projectName: string;
-    projectId: string;
-    date: string;
-    logs: DayEndLogEntry[];
+  projectName: string;
+  projectId: string;
+  date: string;
+  logs: DayEndLogEntry[];
 
 }
 const INITIAL_DAY_END_STATE: DayEndLogEntry = {
@@ -111,7 +111,7 @@ const SingleDayForm: FC<IProps> = ({
   // Local state for project selection if parent doesn't provide callback
   const [localProjectId, setLocalProjectId] = useState(projectId)
   const [localProjectName, setLocalProjectName] = useState(projectName)
-  
+
   // Local state for date selection
   const [localDate, setLocalDate] = useState<string>(
     initialDate || new Date().toISOString().split('T')[0]
@@ -136,26 +136,26 @@ const SingleDayForm: FC<IProps> = ({
 
   // Check if a project is selected to determine if other fields should be shown
   const isProjectSelected = Boolean(currentProjectId)
-  
+
   // Combined loading state for form overlay
   const isLoadingProjectData = loadingPendingLogs || loadingValidDateRange
 
   // Date formatting helper functions
   const formatDateForInput = (date: Date): string => {
-  // Return YYYY-MM-DD using local date components to avoid timezone shifts
-  const y = date.getFullYear()
-  const m = String(date.getMonth() + 1).padStart(2, '0')
-  const d = String(date.getDate()).padStart(2, '0')
-  return `${y}-${m}-${d}`
+    // Return YYYY-MM-DD using local date components to avoid timezone shifts
+    const y = date.getFullYear()
+    const m = String(date.getMonth() + 1).padStart(2, '0')
+    const d = String(date.getDate()).padStart(2, '0')
+    return `${y}-${m}-${d}`
   }
 
   const formatDateForDisplay = (dateStr: string): string => {
-  const date = parseISODateToLocal(dateStr)
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'short', 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
+    const date = parseISODateToLocal(dateStr)
+    return date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
     })
   }
 
@@ -170,7 +170,7 @@ const SingleDayForm: FC<IProps> = ({
     try {
       setLoadingValidDateRange(true)
       const response = await getValidDateRange(projectId)
-      
+
       if (!response.error && response.data) {
         setMinDate(new Date(response.data.minDate))
       } else {
@@ -195,13 +195,13 @@ const SingleDayForm: FC<IProps> = ({
     try {
       setLoadingPendingLogs(true)
       const response = await myPendingLogs()
-      
+
       if (!response.error && response.data) {
         // Find the pending dates for the current project
         const projectPendingLogs = response.data.projectsPendingLogs.find(
           (project) => project.projectId === projectId
         )
-        
+
         if (projectPendingLogs) {
           setPendingLogDates(projectPendingLogs.pendingDates)
         } else {
@@ -227,18 +227,18 @@ const SingleDayForm: FC<IProps> = ({
       // Create a new date object to avoid timezone issues
       const selectedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate())
       const formattedDate = formatDateForInput(selectedDate)
-      
+
       console.log('Selected date:', selectedDate, 'Formatted:', formattedDate) // Debug log
-      
+
       // Update both local states
       setLocalDate(formattedDate)
       setSelectedCalendarDate(selectedDate)
-      
+
       // Call parent callback if provided
       if (onDateChange) {
         onDateChange(formattedDate)
       }
-      
+
       // Close the date picker
       setOpenDatePicker(false)
     }
@@ -295,15 +295,15 @@ const SingleDayForm: FC<IProps> = ({
         return false
       }
 
-  // Refresh pending logs after successful submission
+      // Refresh pending logs after successful submission
       await fetchPendingLogsForProject(currentProjectId)
 
       // Call the parent's next function to proceed
-      next({ 
-        projectName: currentProjectName, 
-        date: currentDate, 
-        logs, 
-        projectId: currentProjectId 
+      next({
+        projectName: currentProjectName,
+        date: currentDate,
+        logs,
+        projectId: currentProjectId
       })
 
       // Reset form state
@@ -312,7 +312,8 @@ const SingleDayForm: FC<IProps> = ({
       setDayEndValues(INITIAL_DAY_END_STATE)
 
       return true
-    } catch (error) {
+    } catch (err) {
+      console.error('Error submitting logs:', err)
       setShowError(true)
       setErrorMessage('An unexpected error occurred while submitting logs')
       return false
@@ -353,6 +354,7 @@ const SingleDayForm: FC<IProps> = ({
           setProjectOptions([])
         }
       } catch (err) {
+        console.error('Error fetching projects:', err)
         setProjectOptions([])
       } finally {
         setLoadingProjects(false)
@@ -382,7 +384,7 @@ const SingleDayForm: FC<IProps> = ({
   useEffect(() => {
     if (initialDate && initialDate !== localDate) {
       setLocalDate(initialDate)
-  setSelectedCalendarDate(parseISODateToLocal(initialDate))
+      setSelectedCalendarDate(parseISODateToLocal(initialDate))
     }
   }, [initialDate])
 
@@ -423,7 +425,7 @@ const SingleDayForm: FC<IProps> = ({
               </div>
             </div>
           )}
-          
+
           <div className="flex flex-col gap-2 md:gap-3">
             <h1 className="text-lg md:text-xl font-bold text-gray-800">Log Time For All Your Projects</h1>
 
@@ -446,10 +448,10 @@ const SingleDayForm: FC<IProps> = ({
                     {currentProjectId
                       ? projectOptions.find((p) => p.value === currentProjectId)?.label || 'Select Project'
                       : loadingProjects
-                      ? 'Loading projects...'
-                      : projectOptions.length > 0
-                      ? 'Select Project'
-                      : 'No projects available'}
+                        ? 'Loading projects...'
+                        : projectOptions.length > 0
+                          ? 'Select Project'
+                          : 'No projects available'}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
@@ -530,11 +532,11 @@ const SingleDayForm: FC<IProps> = ({
                           // Disable future dates
                           const today = new Date()
                           if (date > today) return true
-                          
+
                           // Disable weekends (Saturday = 6, Sunday = 0)
                           // const dayOfWeek = date.getDay()
                           // if (dayOfWeek === 0 || dayOfWeek === 6) return true
-                          
+
                           // Disable dates before user was added to project (date-only comparison)
                           if (minDate) {
                             const minDateOnly = new Date(minDate.getFullYear(), minDate.getMonth(), minDate.getDate())
@@ -553,7 +555,7 @@ const SingleDayForm: FC<IProps> = ({
                           DayButton: ({ day, modifiers, ...props }) => {
                             const dateStr = formatDateForInput(day.date)
                             const hasPendingLog = pendingLogDates.includes(dateStr)
-                            
+
                             return (
                               <Button
                                 variant="ghost"
@@ -614,11 +616,10 @@ const SingleDayForm: FC<IProps> = ({
                         variant={selectedTimeButton === option.value ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => handleTimeSelection(option.value)}
-                        className={`min-w-[50px] h-7 text-xs px-2 ${
-                          selectedTimeButton === option.value
-                            ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                            : 'hover:bg-gray-100'
-                        }`}
+                        className={`min-w-[50px] h-7 text-xs px-2 ${selectedTimeButton === option.value
+                          ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                          : 'hover:bg-gray-100'
+                          }`}
                       >
                         {option.label}
                       </Button>
