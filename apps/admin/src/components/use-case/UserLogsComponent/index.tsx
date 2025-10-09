@@ -46,18 +46,27 @@ const columns: ColumnDef<TimelogData>[] = [
     }
 ];
 
-type IProps = {
-    timeLogs: TimelogData[]
+export type SummaryShape = {
+    projectName: string;
+    user: { name: string; role: string; email: string }
+    completedLogs?: number;
+    pendingLogs?: number;
+    totalLogs?: number;
 }
 
-const UserLogsComponent: FC<IProps> = ({ timeLogs }) => {
+type IProps = {
+    timeLogs: TimelogData[];
+    summary?: SummaryShape | null;
+}
+
+const UserLogsComponent: FC<IProps> = ({ timeLogs, summary: providedSummary = null }) => {
     const {
         paginatedData,
         filter,
         summary,
         paginationOptions,
         setFilter
-    } = useData(timeLogs);
+    } = useData(timeLogs, providedSummary);
 
     return (
         <div className="p-6 max-w-6xl mx-auto">

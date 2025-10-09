@@ -1,6 +1,5 @@
 import { getSingleUserTimelogsV2 } from '@/api/services';
-import UserLogsComponent, { type TimelogData } from '@/components/use-case/UserLogsComponent'
-import { LOGS } from '@/components/use-case/UserLogsComponent/dummy_data';
+import UserLogsComponent, { type TimelogData, type SummaryShape } from '@/components/use-case/UserLogsComponent'
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router'
 
@@ -11,8 +10,8 @@ const UserLogs = () => {
   const teamMemberID = queryObject.has('teamMemberId') ? queryObject.get('teamMemberId') : '';
 
   const [timeLogs, setTimeLogs] = useState<TimelogData[]>([]);
-  const [projectName, setProjectName] = useState('');
-  const [user, setUser] = useState({ name: '', role: '', email: '', teamMemberStartDate: null });
+  // summary will be set from API response
+  const [summary, setSummary] = useState<SummaryShape | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -25,21 +24,30 @@ const UserLogs = () => {
     // Fetch data based on projectID and teamMemberID
     setLoading(true);
     getSingleUserTimelogsV2(teamMemberID, projectID).then((data) => {
-      if (data.error) {
-        setError(data.message || 'Failed to fetch data.');
+      if (!data) {
+        setError('Empty response from server');
         return;
       }
-      // const logs = data.data?.logs || [];
-      /**TO BE:
-       * {
-       *  date: string;
-       *  status: 'completed' | 'pending';
-       *  tasks?: TaskData[];
-       *  createdAt: string;
-       * }
-       */
+      const payload = (data as any).data ?? data;
+      if (payload.error) {
+        setError(payload.message || 'Failed to fetch data.');
+        return;
+      }
+      const apiLogs = payload.logs ?? [];
+      const mapped: TimelogData[] = apiLogs.map((l: any) => ({
+        date: l.date,
+        status: (l.tasks && l.tasks.length > 0) ? 'completed' : 'pending',
+        tasks: (l.tasks ?? []).map((t: any) => ({
+          time: t.time ?? t.timeTakenInHours ?? 0,
+          type: t.type ?? '',
+          task_description: t.task_description ?? t.taskDescription ?? '',
+          featureTitle: t.featureTitle ?? null
+        })),
+        createdAt: l.createdAt
+      }));
 
-      setTimeLogs(LOGS)
+      setTimeLogs(mapped);
+      setSummary({ projectName: payload.summary?.projectName ?? '', user: { name: payload.summary?.userName ?? '', role: payload.summary?.role ?? '', email: payload.summary?.email ?? '' } });
     }).catch((err) => {
       setError(err.message);
     }).finally(() => {
@@ -49,7 +57,7 @@ const UserLogs = () => {
 
   return (
     <>
-      {loading ? <p>Loading...</p> : error ? <p style={{ color: 'red' }}>Error: {error}</p> : <UserLogsComponent timeLogs={timeLogs} />}
+      {loading ? <p>Loading...</p> : error ? <p style={{ color: 'red' }}>Error: {error}</p> : <UserLogsComponent timeLogs={timeLogs} summary={summary} />}
     </>
   )
 }

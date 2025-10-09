@@ -12,7 +12,7 @@ export const FILTERS = {
 
 export const ITEMS_PER_PAGE = 5;
 
-const useData = (data: TimelogData[]) => {
+const useData = (data: TimelogData[], providedSummary: { projectName: string; user: { name: string; role: string; email: string } } | null = null) => {
     const [filter, setFilter] = useState<Filters>('all');
     const [currentPage, setCurrentPage] = useState(1);
 
@@ -20,8 +20,8 @@ const useData = (data: TimelogData[]) => {
         completedLogs: data.filter(log => log.status === 'completed').length,
         pendingLogs: data.filter(log => log.status === 'pending').length,
         totalLogs: data.length,
-        projectName: PROJECT_NAME,
-        user: USER_DATA
+        projectName: providedSummary?.projectName ?? PROJECT_NAME,
+        user: providedSummary?.user ?? USER_DATA
     }
 
     // Filter data based on selected filter

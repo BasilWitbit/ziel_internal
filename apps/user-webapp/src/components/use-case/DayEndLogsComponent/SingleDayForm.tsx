@@ -103,6 +103,10 @@ const SingleDayForm: FC<IProps> = ({
   const [loadingProjects, setLoadingProjects] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [pendingLogDates, setPendingLogDates] = useState<string[]>([])
+  // Dates that already have a time log for the selected project
+  const [loggedDates, setLoggedDates] = useState<string[]>([])
+  // When a logged date is clicked, show an inline notice (prevents selection)
+  const [clickedLoggedDateNotice, setClickedLoggedDateNotice] = useState<string | null>(null)
   const [loadingPendingLogs, setLoadingPendingLogs] = useState(false)
   const [minDate, setMinDate] = useState<Date | undefined>(undefined)
   const [loadingValidDateRange, setLoadingValidDateRange] = useState(false)
@@ -189,6 +193,7 @@ const SingleDayForm: FC<IProps> = ({
   const fetchPendingLogsForProject = async (projectId: string) => {
     if (!projectId) {
       setPendingLogDates([])
+      setLoggedDates([])
       return
     }
 
@@ -203,17 +208,55 @@ const SingleDayForm: FC<IProps> = ({
         )
 
         if (projectPendingLogs) {
-          setPendingLogDates(projectPendingLogs.pendingDates)
+          const pending = projectPendingLogs.pendingDates || []
+
+          // Attempt to determine the working date range used by the API so we can derive logged dates.
+          // The backend may return either a userStartDate or a dateRange; fall back to component minDate or 30 days.
+          const startDate = (projectPendingLogs as any).userStartDate || (projectPendingLogs as any).dateRange?.from || (minDate ? formatDateForInput(minDate) : undefined)
+          const endDate = (projectPendingLogs as any).dateRange?.to || formatDateForInput(new Date())
+
+          // Generate working days in the range (exclude weekends)
+          const generateWorkingDays = (from?: string, to?: string) => {
+            if (!from || !to) return [] as string[]
+            const start = new Date(from)
+            const end = new Date(to)
+            const days: string[] = []
+            const cur = new Date(start)
+            while (cur <= end) {
+              const day = cur.getDay()
+              if (day !== 0 && day !== 6) {
+                days.push(cur.toISOString().split('T')[0])
+              }
+              cur.setDate(cur.getDate() + 1)
+            }
+            return days
+          }
+
+          const allWorkingDays = generateWorkingDays(startDate, endDate)
+
+          // loggedDates = working days inside range that are NOT in pending (and may include past days)
+          const logged = allWorkingDays.filter((d) => !pending.includes(d))
+
+          // Ensure today's date is considered pending if not logged (user requested behavior)
+          const todayStr = formatDateForInput(new Date())
+          const todayIsLogged = logged.includes(todayStr)
+          const pendingWithToday = pending.includes(todayStr) || (!todayIsLogged && allWorkingDays.includes(todayStr))
+
+          setPendingLogDates(pendingWithToday ? Array.from(new Set([...pending, todayStr])) : pending)
+          setLoggedDates(logged)
         } else {
           setPendingLogDates([])
+          setLoggedDates([])
         }
       } else {
         console.error('Failed to fetch pending logs:', response.message)
         setPendingLogDates([])
+        setLoggedDates([])
       }
     } catch (error) {
       console.error('Error fetching pending logs:', error)
       setPendingLogDates([])
+      setLoggedDates([])
     } finally {
       setLoadingPendingLogs(false)
     }
@@ -519,12 +562,12 @@ const SingleDayForm: FC<IProps> = ({
                         <CalendarIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 z-[10000]" align="start">
+                    <PopoverContent className="p-0 w-80 z-[10000]" align="start">
                       <Calendar
                         mode="single"
                         selected={selectedCalendarDate}
                         onSelect={handleCalendarDateSelect}
-                        className="rounded-md border shadow-sm"
+                        className="w-full rounded-md border shadow-sm"
                         captionLayout="dropdown"
                         initialFocus
                         // usman leghari bug fix #01
@@ -555,6 +598,23 @@ const SingleDayForm: FC<IProps> = ({
                           DayButton: ({ day, modifiers, ...props }) => {
                             const dateStr = formatDateForInput(day.date)
                             const hasPendingLog = pendingLogDates.includes(dateStr)
+                            const hasLogged = loggedDates.includes(dateStr)
+
+                            // Disable selection for dates that already have logs
+                            const disabled = hasLogged
+
+                            // When a logged date is clicked, show an inline notice instead of selecting
+                            const onClick = (e: any) => {
+                              if (disabled) {
+                                e?.preventDefault()
+                                setClickedLoggedDateNotice(dateStr)
+                                // Clear notice after a short delay so it doesn't persist
+                                setTimeout(() => setClickedLoggedDateNotice((prev) => (prev === dateStr ? null : prev)), 3500)
+                                return
+                              }
+                              // Otherwise, forward the original props onClick (calendar will handle selection)
+                              if (props.onClick) props.onClick(e)
+                            }
 
                             return (
                               <Button
@@ -572,21 +632,47 @@ const SingleDayForm: FC<IProps> = ({
                                   props.className
                                 )}
                                 {...props}
+                                onClick={onClick}
+                                disabled={disabled}
                               >
                                 <span>{day.date.getDate()}</span>
-                                {hasPendingLog && (
+
+                                {/* Green dot for dates that already have logs */}
+                                {hasLogged && (
+                                  <div className="absolute bottom-0.5 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                                )}
+
+                                {/* Red dot for pending (missing) logs */}
+                                {!hasLogged && hasPendingLog && (
                                   <div className="absolute bottom-0.5 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 bg-red-500 rounded-full"></div>
+                                )}
+
+                                {/* Inline notice when clicking a logged date */}
+                                {clickedLoggedDateNotice === dateStr && (
+                                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 bg-black text-white text-xs px-2 py-0.5 rounded">
+                                    Time log already created for this date
+                                  </div>
                                 )}
                               </Button>
                             )
                           }
                         }}
                       />
-                      {pendingLogDates.length > 0 && (
-                        <div className="p-3 border-t bg-gray-50">
-                          <div className="flex items-center gap-2 text-xs text-gray-600">
-                            <div className="w-1.5 h-1.5 bg-red-500 rounded-full"></div>
-                            <span>Dates with missing logs</span>
+                      {(pendingLogDates.length > 0 || loggedDates.length > 0) && (
+                        <div className="p-3 border-t bg-gray-50 w-full">
+                          <div className="flex flex-col gap-2 text-xs text-gray-600">
+                            {pendingLogDates.length > 0 && (
+                              <div className="flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 bg-red-500 rounded-full"></div>
+                                <span className="whitespace-normal">Dates with missing logs (today is included if not logged)</span>
+                              </div>
+                            )}
+                            {loggedDates.length > 0 && (
+                              <div className="flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                                <span className="whitespace-normal">Dates with existing logs (cannot select)</span>
+                              </div>
+                            )}
                           </div>
                         </div>
                       )}
