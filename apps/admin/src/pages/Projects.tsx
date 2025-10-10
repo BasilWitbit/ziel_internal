@@ -8,7 +8,7 @@ import { getProjects} from "@/api/services";
 import { type Project as ApiProject } from "@/api/types";
 import TableComponent from '../components/common/TableComponent/TableComponent'
 import { TooltipComponent } from '@/components/TooltipComponent';
-import { capitalizeWords } from '@/utils/helpers';
+import { capitalizeWords, toQueryParams } from '@/utils/helpers';
 
 // Types
 interface TeamMember {
@@ -79,9 +79,12 @@ const Projects = () => {
         const userId = member.id ?? '';
         const projectId = project.id ?? '';
 
-        const query = `teamMemberId=${encodeURIComponent(teamMemberId)}&userId=${encodeURIComponent(userId)}&projectId=${encodeURIComponent(projectId)}`;
-        
-        navigate(`/user-logs?${query}`, {
+        // const query = `teamMemberId=${encodeURIComponent(teamMemberId)}&userId=${encodeURIComponent(userId)}&projectId=${encodeURIComponent(projectId)}`;
+
+        const query = toQueryParams({ teamMemberId, userId, projectId });
+        console.log(query); // "?teamMemberId=123&userId=123&projectId=456"
+
+        navigate(`/user-logs${query}`, {
             state: {
                 user: member,
                 projectName: project.projectName,

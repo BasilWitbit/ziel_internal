@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import type { TimelogData } from '.';
-import { PROJECT_NAME, USER_DATA } from './dummy_data';
 
 type Filters = 'all' | 'pending' | 'completed'
 
@@ -16,12 +15,16 @@ const useData = (data: TimelogData[], providedSummary: { projectName: string; us
     const [filter, setFilter] = useState<Filters>('all');
     const [currentPage, setCurrentPage] = useState(1);
 
+    // Minimal fallbacks when no provided summary is available
+    const DEFAULT_PROJECT_NAME = 'Unknown Project';
+    const DEFAULT_USER = { name: 'Unknown User', role: '', email: '' };
+
     const SUMMARY = {
         completedLogs: data.filter(log => log.status === 'completed').length,
         pendingLogs: data.filter(log => log.status === 'pending').length,
         totalLogs: data.length,
-        projectName: providedSummary?.projectName ?? PROJECT_NAME,
-        user: providedSummary?.user ?? USER_DATA
+        projectName: providedSummary?.projectName ?? DEFAULT_PROJECT_NAME,
+        user: providedSummary?.user ?? DEFAULT_USER
     }
 
     // Filter data based on selected filter

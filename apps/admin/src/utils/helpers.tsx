@@ -11,3 +11,16 @@ export function capitalizeWords(input: string): string {
         })
         .join(' ');
 }
+
+export function toQueryParams(params: Record<string, string>): string {  
+  const searchParams = new URLSearchParams();  
+
+  for (const [key, value] of Object.entries(params)) {  
+    if (value !== undefined && value !== null) {  
+      searchParams.append(key, value);  
+    }  
+  }  
+
+  const queryString = searchParams.toString();  
+  return queryString ? `?${queryString}` : '';  
+} 
