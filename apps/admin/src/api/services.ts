@@ -8,7 +8,8 @@ import type {
 	UiProjectData,
 	CreateProjectPayload,
 	CreateProjectTeamMemberInput,
-	UserProjectTimelogsResponse
+	UserProjectTimelogsResponse,
+	UserProjectTimeLogsV2Response
 } from "./types";
 
 export const createProject = async (
@@ -73,9 +74,6 @@ export const createProject = async (
 		return { error: true, message } as ResponseData<Project>;
 	}
 };
-
-
-
 
 
 export const getProjects = async (): Promise<ResponseData<Project[]>> => {
@@ -240,8 +238,6 @@ export const patchProjectTeamMembers = async (
 	}
 };
 
-
-
 export const getSingleUserTimelogs = async (
 	userId: string,
 	projectId: string,
@@ -257,6 +253,27 @@ export const getSingleUserTimelogs = async (
 		});
 
 		const data = (res?.data?.data?.data ?? res?.data?.data) as UserProjectTimelogsResponse;
+
+		return { error: false, message: res?.data?.message || "Success", data };
+	} catch (err: any) {
+		let message = err?.response?.data?.message || err?.message;
+		if (Array.isArray(message)) message = message.join(", ");
+		return { error: true, message, data: undefined };
+	}
+};
+export const getSingleUserTimelogsV2 = async (
+	teamMemberId: string,
+	projectId: string
+): Promise<ResponseData<UserProjectTimeLogsV2Response>> => {
+	try {
+		const token = getAccessToken();
+
+		const res = await axios.get(`/day-end-logs/user-project-timelogs-v2`, {
+			params: { teamMemberId, projectId, },
+			headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+		});
+
+		const data = (res?.data?.data?.data ?? res?.data?.data) as UserProjectTimeLogsV2Response;
 
 		return { error: false, message: res?.data?.message || "Success", data };
 	} catch (err: any) {

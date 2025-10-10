@@ -11,6 +11,7 @@ import type {
 	UserProjectTimelogsResponse,
 	MySummaryResponse,
 	MyPendingLogsResponse,
+	ValidDateRangeResponse,
 } from "./types";
 
 export const createProject = async (
@@ -161,6 +162,28 @@ export const myPendingLogs = async (): Promise<ResponseData<MyPendingLogsRespons
 		};
 	} catch (err: any) {
 		let message = err?.response?.data?.message || err?.message || "Failed to fetch pending logs";
+		if (Array.isArray(message)) message = message.join(", ");
+		return { error: true, message, data: undefined };
+	}
+};
+
+export const getValidDateRange = async (projectId: string): Promise<ResponseData<ValidDateRangeResponse>> => {
+	try {
+		const token = getAccessToken();
+		const res = await axios.get(`/day-end-logs/valid-date-range?projectId=${projectId}`, {
+			headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+		});
+
+		// Defensive unwrap in case Nest wraps differently
+		const data = (res?.data?.data?.data ?? res?.data?.data) as ValidDateRangeResponse;
+
+		return {
+			error: false,
+			message: res?.data?.message || "Valid date range fetched successfully",
+			data,
+		};
+	} catch (err: any) {
+		let message = err?.response?.data?.message || err?.message || "Failed to fetch valid date range";
 		if (Array.isArray(message)) message = message.join(", ");
 		return { error: true, message, data: undefined };
 	}
